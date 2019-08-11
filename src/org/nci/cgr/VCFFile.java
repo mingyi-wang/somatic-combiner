@@ -54,25 +54,41 @@ public class VCFFile {
 	}
 
 
-	public void writeVariants(BufferedWriter bw,Variant vv) throws IOException {
+	public void writeVariants(BufferedWriter bw,Variant vv, int snvCallerNum,int indelCallerNum) throws IOException {
 //		if (vv.getVariantContext().getStart()==7882066)
 //			System.out.println("found!");
 		bw.append(vv.getVariantContext().getContig()+"\t"+vv.getVariantContext().getStart()+"\t"+vv.getVariantContext().getID()+"\t"+
 	              vv.getVariantContext().getAlleles().get(0).getBaseString()+"\t");
 		
 		if (vv.getVariantContext().getAlleles().size()>1)
-			bw.append(vv.getVariantContext().getAlleles().get(1).getBaseString()+"\t"+
-				  "PASS"+"\t");
+			bw.append(vv.getVariantContext().getAlleles().get(1).getBaseString()+"\t");
 		else
-			bw.append(vv.getVariantContext().getAlleles().get(0).getBaseString()+"\t"+
-					  "PASS"+"\t");
+			bw.append(vv.getVariantContext().getAlleles().get(0).getBaseString()+"\t");
 		
 		Map<String,Object> info=vv.getVariantContext().getAttributes();
+		String infoContent="";
+		String qualContent=".";
+		for (String key:info.keySet()) {
+			if (key=="qual")
+				qualContent=info.get(key).toString();
+			else
+			    infoContent=infoContent+key+"="+info.get(key).toString()+";";
+		}
+		bw.append(qualContent+"\t");
 		
-		for (String key:info.keySet()) 
-			bw.append(key+"="+info.get(key).toString()+";");
-		 
-		bw.append("NumTools="+Integer.bitCount(vv.getSet())+";"+String.format("%6s", Integer.toBinaryString(vv.getSet() & 0xFF)).replace(' ', '0'));
+		if (vv.getVariantContext().isSNP()) {
+			if ((float)Integer.bitCount(vv.getSet()) / snvCallerNum >= 0.5)
+				bw.append("PASS" + "\t");
+			else
+				bw.append("LowQual" + "\t");
+		} else {
+			if ((float)Integer.bitCount(vv.getSet()) / indelCallerNum >= 0.5)
+				bw.append("PASS" + "\t");
+			else
+				bw.append("LowQual" + "\t");
+		}
+						
+		bw.append(infoContent+"NumTools="+Integer.bitCount(vv.getSet())+";"+String.format("%6s", Integer.toBinaryString(vv.getSet() & 0xFF)).replace(' ', '0'));
 		String format="";
 		String gtString="";
 		//vcfEncoder.write(bw, vv.getVariantContext());
@@ -207,7 +223,7 @@ public class VCFFile {
 		return header;
 	}
 	
-	public void importVariants(List<Variant> list) throws ClassNotFoundException, SQLException {
+	public int importVariants(List<Variant> list) throws ClassNotFoundException, SQLException {
 		vcfFile = new File(filePath);
 
 		vcfFileReader = new VCFFileReader(vcfFile, false);
@@ -222,13 +238,13 @@ public class VCFFile {
 			}
 			if (!foundTumor) {
 				System.out.println("Warning: "+filePath+" is skipped due to no TUMOR or TUMOUR found in the samplename line!");
-				return;
+				return 0;
 			}
 		}
 		else
 			if (sampleNames.size()>2) {
 				System.out.println("Warning: "+filePath+" is skipped due to more than two samples in the VCF!");
-				return;
+				return 0;
 			}
 				
 		// System.out.println(ss);
@@ -266,12 +282,6 @@ public class VCFFile {
 			if (ff == false) {
 				if (vc.isBiallelic()) {
 					Variant variant=new Variant(vc,caller);
-					int index=list.indexOf(variant);
-					if (index!=-1) {
-						// skip the variant with same location and allele and from same caller
-						if(vc.getAlleles().equals(list.get(index).getVariantContext().getAlleles()) && variant.getCaller().equals(list.get(index).getCaller()))
-							continue;
-					}
 					list.add(variant);
 				}
 				else {
@@ -348,6 +358,8 @@ public class VCFFile {
 					  build.chr(vc.getContig());
 					  build.start(vc.getStart());
 					  build.id(vc.getID());
+					  if (vc.hasLog10PError()) 
+						  build.log10PError(vc.getLog10PError());  
 					  build.stop(vc.getEnd());
 					  build.genotypes(splitGenotypes);
 					  build.attributes(vc.getAttributes());
@@ -359,6 +371,7 @@ public class VCFFile {
 			    	
 			}
     	}
+		return 1;
 	}
 	
 	

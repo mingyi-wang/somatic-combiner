@@ -19,6 +19,7 @@ import org.apache.commons.cli.ParseException;
 
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.writer.*;
 public class SomaticCombiner {
 
@@ -88,33 +89,46 @@ public class SomaticCombiner {
 		VCFFile strelkaINDEL=new VCFFile(strelkaIndelFilePath,"strelka");
 		VCFFile lofreqSNV=new VCFFile(lofreqSNVFilePath,"lofreq");
 		VCFFile lofreqINDEL=new VCFFile(lofreqIndelFilePath,"lofreq");
-		museVCF.importVariants(list);
-		vardictVCF.importVariants(list);
-		mutectVCF.importVariants(list);
-		mutect2VCF.importVariants(list);
-		strelkaSNV.importVariants(list);
-		strelkaINDEL.importVariants(list);
-		lofreqSNV.importVariants(list);
-		lofreqINDEL.importVariants(list);
+		int snvCallerNum=0;
+		int indelCallerNum=0;
+		snvCallerNum+=museVCF.importVariants(list);
+		if (vardictVCF.importVariants(list)>0) {
+			snvCallerNum++;
+			indelCallerNum++;
+			
+		}
+			
+		snvCallerNum+=mutectVCF.importVariants(list);
+		if (mutect2VCF.importVariants(list)>0) {
+			snvCallerNum++;
+			indelCallerNum++;
+			
+		};
+		snvCallerNum+=strelkaSNV.importVariants(list);
+		indelCallerNum+=strelkaINDEL.importVariants(list);
+		snvCallerNum+=lofreqSNV.importVariants(list);
+		indelCallerNum+=lofreqINDEL.importVariants(list);
 		System.out.println(vardictFilePath);
-		List<Variant> mergedList=new ArrayList<Variant>();
+		List<MergedVariant> mergedList=new ArrayList<MergedVariant>();
 		System.out.println("Starting merging...");
 		long i=0;
 		for (Variant p : list) {
 			i++;
 			System.out.println(i);
-			if (i==10475)
+			if (p.getVariantContext().getStart()==51384111)
 				System.out.println("found!");
-			int index=mergedList.indexOf(p);
+			MergedVariant mp=new MergedVariant(p.getVariantContext(), p.getCaller());
+			int index=mergedList.indexOf(mp);
 			if (index!=-1) {
-				Variant mergedVariant=mergedList.get(index).merge(p);
+				MergedVariant mergedVariant=mergedList.get(index).merge(mp);
 				if (mergedVariant==null)
-					mergedList.add(p);
+					mergedList.add((MergedVariant) p);
 				else
 				    mergedList.set(index, mergedVariant);
 			}
 			else {
-				mergedList.add(p);
+				
+				mergedList.add(mp);
 			}
 		}
 		System.out.println("Sorting merged variants ...");
@@ -147,7 +161,7 @@ public class SomaticCombiner {
 			System.out.println("Writing:"+i);
 			if (i==45)
 				System.out.println("found!");
-			museVCF.writeVariants(bw,p);
+			museVCF.writeVariants(bw,p,snvCallerNum,indelCallerNum);
 		}
 		bw.close();
 		
