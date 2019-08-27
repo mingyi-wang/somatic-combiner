@@ -24,44 +24,7 @@ public class Variant {
 	    protected String caller;
 	    protected Byte set;
 	    protected int priority;
-	    public Variant( VariantContext variant, String callerID) throws ClassNotFoundException{
-	    	variantContext=variant;    	
-	    	caller=callerID;
-	    	switch(caller) {
-	    	  case "vardict":
-	    	    set=0b000001;
-	    	    priority=3;
-	    	    break;
-	    	  case "muse":
-	    		set=0b000010;
-	    		priority=4;
-	    		break;
-	    	  case "strelka":
-	    		set=0b000100;
-	    		priority=2;
-	    		break;
-	    	  case "lofreq":
-	    		set=0b001000;
-	    		priority=1;
-	    		break;
-	    	  case "mutect2":
-	    		set=0b010000;
-	    		priority=6;
-	    		break;
-	    	  case "mutect":
-	    		set=0b100000;
-	    		priority=5;
-	    		break;
-	    	}
-	    	
-	    	// variantKey=variantID;
-	    	
-//	    	String myDriver = "org.gjt.mm.mysql.Driver";
-//			String myUrl = "jdbc:mysql://localhost/annotation_db";
-//			Class.forName(myDriver);
-//			connection = DriverManager.getConnection(myUrl, "root", "zh990122");
-			
-	    }
+	    
 	    public Variant( VariantContext variant, String callerID,int p,Byte s) throws ClassNotFoundException{
 	    	variantContext=variant;    	
 	    	caller=callerID;
@@ -122,6 +85,14 @@ public class Variant {
 		}
 		public void setCaller(String caller) {
 			this.caller = caller;
+		}
+
+		public int getPriority() {
+			return priority;
+		}
+
+		public void setPriority(int priority) {
+			this.priority = priority;
 		}
 
 		

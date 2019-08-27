@@ -16,14 +16,6 @@ import htsjdk.variant.variantcontext.VariantContextBuilder;
 
 public class MergedVariant extends Variant   
 {
-	public MergedVariant(VariantContext variant, String callerID) throws ClassNotFoundException 
-	{ 
-	// invoking base-class(Bicycle) constructor 
-	super(variant, callerID); 
-
-	}  
-	
-	
 	 public MergedVariant(VariantContext variant, String callerID,int p,Byte s) throws ClassNotFoundException{
 
 	    	super(variant,callerID,p,s);
@@ -67,34 +59,24 @@ public class MergedVariant extends Variant
 			if (multipleCallerCalled)
 				mergedInfo.put(key, thisInfo.get(key));
 			else
-			    mergedInfo.put(this.caller+"_"+key, thisInfo.get(key));
+			    mergedInfo.put(SomaticCombiner.callerName(this.caller)+"_"+key, thisInfo.get(key));
 		}
 		otherInfo=other.variantContext.getAttributes();
 		for (String key:otherInfo.keySet())
-			mergedInfo.put(other.caller+"_"+key, otherInfo.get(key));
-		String qual="";
-		boolean hasQual=false;
+			mergedInfo.put(SomaticCombiner.callerName(other.caller)+"_"+key, otherInfo.get(key));
 		
-		if (this.getVariantContext().hasLog10PError() && other.getVariantContext().hasLog10PError()) {
-			hasQual=true;
-			if (this.priority>other.priority)
-			    qual=String.valueOf(this.getVariantContext().getPhredScaledQual());
-			else
-				qual=String.valueOf(getVariantContext().getPhredScaledQual());
-			
-		}
-		else {
-			if (this.getVariantContext().hasLog10PError()) {
-				qual=String.valueOf(this.getVariantContext().getPhredScaledQual());
-				hasQual=true;
-			}
-			if (other.getVariantContext().hasLog10PError()) {
-			    qual=String.valueOf(getVariantContext().getPhredScaledQual());
-			    hasQual=true;
+		String qual="";
+		if (this.getVariantContext().hasLog10PError()) {
+			if (!multipleCallerCalled) {
+			qual=String.valueOf(this.getVariantContext().getPhredScaledQual());
+			mergedInfo.put(SomaticCombiner.callerName(this.caller)+"_"+VCFFile.QUAL_TAG, qual);
 			}
 		}
-		if (hasQual)
-			mergedInfo.put("qual", qual);
+		if (other.getVariantContext().hasLog10PError()) {
+			qual=String.valueOf(getVariantContext().getPhredScaledQual());
+			mergedInfo.put(SomaticCombiner.callerName(other.caller)+"_"+VCFFile.QUAL_TAG, qual);
+		}
+		
 						
 		GenotypesContext thisGenotypes=null;
 		GenotypesContext otherGenotypes=null;
@@ -132,13 +114,17 @@ public class MergedVariant extends Variant
 							Genotype tmpGenotype = null;
 							Map<String, Object> thisExtendedGT = thisGenotypes.get(thisSamples[i]).getExtendedAttributes();
 							Map<String, Object> otherExtendedGT = otherGenotypes.get(otherSamples[i]).getExtendedAttributes();
-							for (String key : thisExtendedGT.keySet())
+							for (String key : thisExtendedGT.keySet()) {
+								if (key.contains("FDP")) 
+									System.out.println("Found!");
+								
 								if (multipleCallerCalled)
 									mergedExtendedGT.put(key, thisExtendedGT.get(key));
 								else
-									mergedExtendedGT.put(this.caller + "_" + key, thisExtendedGT.get(key));
+									mergedExtendedGT.put(SomaticCombiner.callerName(this.caller) + "_" + key, thisExtendedGT.get(key));
+							}
 							for (String key : otherExtendedGT.keySet())
-								mergedExtendedGT.put(other.caller + "_" + key, otherExtendedGT.get(key));
+								mergedExtendedGT.put(SomaticCombiner.callerName(other.caller) + "_" + key, otherExtendedGT.get(key));
 							mergedGenotypeBuilder.attributes(mergedExtendedGT);
 
 							if (this.priority > other.priority)
@@ -177,22 +163,72 @@ public class MergedVariant extends Variant
 				else
 					tmpGenotypes=other.variantContext.getGenotypes();
 				if (tmpGenotypes!=null) {
-					for (Genotype tmpGenotype: tmpGenotypes)
+					for (Genotype tmpGenotype:tmpGenotypes)
+					
 				       mergedGenotypes.add(tmpGenotype);
 				}
 		   }
 		   
 		}else {
-			List<Genotype> tmpGenotypes=null;
-			if (this.variantContext.hasGenotypes()) 
+			GenotypesContext tmpGenotypes=null;
+			Set<String> tmpSampleNames = null;
+			String tmpCaller="";
+			if (this.variantContext.hasGenotypes()) { 
 				tmpGenotypes=this.variantContext.getGenotypes();
-			
-			if (other.variantContext.hasGenotypes()) 
-				tmpGenotypes=other.variantContext.getGenotypes();
-			if (tmpGenotypes!=null) {
-				for (Genotype tmpGenotype: tmpGenotypes)
-			       mergedGenotypes.add(tmpGenotype);
+			    tmpSampleNames=this.variantContext.getSampleNames();
+			    tmpCaller=this.getCaller();
 			}
+			if (other.variantContext.hasGenotypes()) {
+				tmpGenotypes=other.variantContext.getGenotypes();
+			    tmpSampleNames=other.variantContext.getSampleNames();
+			    tmpCaller=other.getCaller();
+			}
+			
+			if (tmpGenotypes!=null) {
+				Map<String, Object> mergedExtendedGT = new HashMap<String, Object>();
+				if (tmpSampleNames.size() == 2) {
+					String[] tmpSamples = new String[2];
+					boolean tmpFoundTumor = false;
+					for (String sampleName : tmpSampleNames)
+						if (sampleName.toUpperCase().contains(VCFFile.TUMOR_TAG1)||sampleName.toUpperCase().contains(VCFFile.TUMOR_TAG2)) {
+							tmpSamples[0] = sampleName;
+							tmpFoundTumor = true;
+						} else
+							tmpSamples[1] = sampleName;
+					if (tmpFoundTumor) {
+						GenotypeBuilder mergedGenotypeBuilder = new GenotypeBuilder();
+					    for (int i = 0; i < tmpGenotypes.size(); i++) {
+					    	String sampleName=VCFFile.TUMOR_TAG1;
+							if (i==1) sampleName=VCFFile.NORMAL_TAG;
+				    	    Map<String, Object> thisExtendedGT = tmpGenotypes.get(tmpSamples[i]).getExtendedAttributes();
+					        for (String key : thisExtendedGT.keySet()) 
+						    	mergedExtendedGT.put(SomaticCombiner.callerName(tmpCaller) + "_" + key, thisExtendedGT.get(key));
+					    
+						    mergedGenotypeBuilder.attributes(mergedExtendedGT);
+	
+					        mergedGenotypeBuilder.alleles(tmpGenotypes.get(tmpSamples[i]).getAlleles());
+				        	if (tmpGenotypes.get(tmpSamples[i]).hasAD() )
+					   	       mergedGenotypeBuilder.AD(tmpGenotypes.get(tmpSamples[i]).getAD());
+				        	else {
+						       if (tmpGenotypes.get(tmpSamples[i]).hasAD())
+					        		mergedGenotypeBuilder.AD(tmpGenotypes.get(tmpSamples[i]).getAD());
+						    }
+	
+				        	if (tmpGenotypes.get(tmpSamples[i]).hasDP())
+						       mergedGenotypeBuilder.DP(tmpGenotypes.get(tmpSamples[i]).getDP());
+			        		else {
+					            if (tmpGenotypes.get(tmpSamples[i]).hasDP())
+							      mergedGenotypeBuilder.DP(tmpGenotypes.get(tmpSamples[i]).getDP());
+					        }
+			                mergedGenotypeBuilder.name(sampleName);
+					        mergedGenotypes.add(mergedGenotypeBuilder.make());
+			    	
+			            }
+		            }
+				}
+			       
+			}
+			
 		}
 		
 		
@@ -221,4 +257,6 @@ public class MergedVariant extends Variant
 		//return null;
     	
     }
+    
+    
 }
