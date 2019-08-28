@@ -110,7 +110,7 @@ public class SomaticCombiner {
 			    if(vcfFile.importVariants(list)>0) {
 			    	caller.setVcfFile(vcfFile);
 			    	callerSymbols+=caller.getSymbol();
-			    	callerNames+=caller.getCallerName()+",";
+			    	callerNames+=caller.getName()+",";
 			    	if (caller.getType().equals("BOTH")){
 			    		snvCallerNum++;
 			    		indelCallerNum++;
@@ -223,14 +223,14 @@ public class SomaticCombiner {
 					Set<VCFHeaderLine> mInfoMetaData = new HashSet<VCFHeaderLine>();
 					VCFHeaderLine vcfInfoHeaderLine=new VCFInfoHeaderLine(COUNT_TAG, 1, VCFHeaderLineType.Integer,"The number of callers" );
 					mInfoMetaData.add(vcfInfoHeaderLine);
-					vcfInfoHeaderLine=new VCFInfoHeaderLine(callerSymbols,callerSymbols.length(), VCFHeaderLineType.Integer,"Calling descision of the callers: "+callerNames );
+					vcfInfoHeaderLine=new VCFInfoHeaderLine(callerSymbols,1, VCFHeaderLineType.String,"Calling descision of the callers in a binary string: "+callerNames );
 					
 					mInfoMetaData.add(vcfInfoHeaderLine);
-					if (callerNames.contains("Lofreq")) {
+					if (callerNames.contains("lofreq")) {
 						vcfInfoHeaderLine=new VCFInfoHeaderLine("Lofreq_QUAL", 1, VCFHeaderLineType.Float,"Lofreq QUAL" );
 						mInfoMetaData.add(vcfInfoHeaderLine);
 					}
-					if (callerNames.contains("Vardict")) {
+					if (callerNames.contains("vardict")) {
 						vcfInfoHeaderLine=new VCFInfoHeaderLine("Vardict_QUAL", 1, VCFHeaderLineType.Float,"Vardict QUAL" );						
 						mInfoMetaData.add(vcfInfoHeaderLine);
 					}
