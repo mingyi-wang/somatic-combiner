@@ -210,7 +210,7 @@ public class VCFFile {
 		for (final VCFHeaderLine line : header.getMetaDataInSortedOrder()) {
 			if (VCFHeaderVersion.isFormatString(line.getKey()))
 				continue;
-           
+            
 			mHeader.addMetaDataLine(line);
 		}
 		
@@ -346,8 +346,8 @@ public class VCFFile {
 		final CloseableIterator<VariantContext> variantIterator = vcfFileReader.iterator();
 		while (variantIterator.hasNext()) {
 			final VariantContext vc = variantIterator.next();
-//			if (vc.getStart()==61851)
-//				System.out.println("found!");
+			if (vc.getStart()==31279271)
+				System.out.println("found!");
 			System.out.println(caller+" "+vc.getContig()+":"+vc.getStart());
 			// Set<String> filters=vc.getFilters();
 			Boolean ff = vc.isFiltered();
@@ -389,8 +389,9 @@ public class VCFFile {
 					  VariantContextBuilder build=new VariantContextBuilder();
 					  VariantContext splitVC=null;
 					  VariantContext tmpVC=variant.getVariantContext();
-					  List<Allele> tmpAlleles=tmpVC.getAlleles();
-					  List<Genotype> tmpGenotypes=tmpVC.getGenotypes();
+					  List<Allele> tmpAlleles=new ArrayList<Allele>(tmpVC.getAlleles());
+					//  tmpAlleles=tmpVC.getAlleles();
+					  List<Genotype> tmpGenotypes=new ArrayList<Genotype>(tmpVC.getGenotypes());
 					 
 					  for (int j=1;j<alleleCount;j++) 
 						 if ((j!=i) && (j!=0)) 
@@ -408,8 +409,8 @@ public class VCFFile {
 									 if ((j==i) || (j==0)) 
 								       newADs[k++]=ADs[j];									   
 							  
-							  List<Allele> tmpGtAlleles=gt.getAlleles();
-							  
+							  List<Allele> tmpGtAlleles=new ArrayList<Allele>(gt.getAlleles());
+							  System.out.println(vc.getGenotype(0).getAlleles().size());
 							  for (int j=0;j<tmpGtAlleles.size();j++) {
 								  boolean found=false;
 								  for (int k=0;k<tmpAlleles.size();k++) {
@@ -423,6 +424,7 @@ public class VCFFile {
 									  break;
 								  }  
 							  }
+							  System.out.println(vc.getGenotype(0).getAlleles().size());
 							  for (int j=0;j<tmpGtAlleles.size();j++) 
 								  System.out.println("genotype:"+tmpGtAlleles.get(j).getBaseString());
 								  							  

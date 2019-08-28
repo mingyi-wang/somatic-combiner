@@ -225,7 +225,19 @@ public class SomaticCombiner {
 					mInfoMetaData.add(vcfInfoHeaderLine);
 					vcfInfoHeaderLine=new VCFInfoHeaderLine(callerSymbols,callerSymbols.length(), VCFHeaderLineType.Integer,"Calling descision of the callers: "+callerNames );
 					
-					mInfoMetaData.add(vcfInfoHeaderLine);	
+					mInfoMetaData.add(vcfInfoHeaderLine);
+					if (callerNames.contains("Lofreq")) {
+						vcfInfoHeaderLine=new VCFInfoHeaderLine("Lofreq_QUAL", 1, VCFHeaderLineType.Float,"Lofreq QUAL" );
+						mInfoMetaData.add(vcfInfoHeaderLine);
+					}
+					if (callerNames.contains("Vardict")) {
+						vcfInfoHeaderLine=new VCFInfoHeaderLine("Vardict_QUAL", 1, VCFHeaderLineType.Float,"Vardict QUAL" );						
+						mInfoMetaData.add(vcfInfoHeaderLine);
+					}
+					VCFHeaderLine vcfFormatHeaderLine=new VCFFormatHeaderLine("GT", 1, VCFHeaderLineType.String,"Genotype" );
+					mInfoMetaData.add(vcfFormatHeaderLine);
+					vcfFormatHeaderLine=new VCFFormatHeaderLine("DP", 1, VCFHeaderLineType.Integer,"Total Depth" );
+					mInfoMetaData.add(vcfFormatHeaderLine);
 					VCFFilterHeaderLine vcfFilterHeaderLine=new VCFFilterHeaderLine("LowQual","Low confidence call");
 					mInfoMetaData.add(vcfFilterHeaderLine);
 					vcfFilterHeaderLine=new VCFFilterHeaderLine("PASS","high confidence call");
