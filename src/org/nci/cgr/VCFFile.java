@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import htsjdk.samtools.util.CloseableIterator;
@@ -62,8 +63,8 @@ public class VCFFile {
 
 
 	public void writeVariants(BufferedWriter bw,Variant vv, int snvCallerNum,int indelCallerNum) throws IOException {
-//		if (vv.getVariantContext().getStart()==7882066)
-//			System.out.println("found!");
+		if (vv.getVariantContext().getStart()==1770788)
+			System.out.println("found!");
 		bw.append(vv.getVariantContext().getContig()+"\t"+vv.getVariantContext().getStart()+"\t"+vv.getVariantContext().getID()+"\t"+
 	              vv.getVariantContext().getAlleles().get(0).getBaseString()+"\t");
 		
@@ -122,6 +123,14 @@ public class VCFFile {
 				   System.err.println("Error: the samples in "+filePath+" does not contain TUMOR in the genotype columns! The variants in this file will be skipped!");
 	               return; 
 			   }
+			   Set<String> extendedGtKeyset=new TreeSet<String>();
+			   for(int i=0;i<samples.length;i++) {
+				   Genotype gt=vv.getVariantContext().getGenotype(samples[i]);
+				   Map<String,Object> extendedAttributes=gt.getExtendedAttributes();
+				   for (String key:extendedAttributes.keySet()) {
+					   extendedGtKeyset.add(key);
+				   }
+			   }
 			   for(int i=0;i<samples.length;i++) {
 				   Genotype gt=vv.getVariantContext().getGenotype(samples[i]);
 //				   if (genoTypes[Integer.parseInt(results[j])].compareTo("0")==0)
@@ -170,14 +179,17 @@ public class VCFFile {
 					   if (i==0) format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+"AD";   
 				   }
 				   Map<String,Object> extendedAttributes=gt.getExtendedAttributes() ;
-				   for (String key:extendedAttributes.keySet()) {
+				   for (String key:extendedGtKeyset) {
 					   if (i==0) {
 						   if (vv.getCaller().contains(","))
 					          format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+key;
 						   else
-							   format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+SomaticCombiner.callerName(vv.getCaller())+"_"+key;
+							  format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+SomaticCombiner.callerName(vv.getCaller())+"_"+key;
 					   }
-					   gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+extendedAttributes.get(key).toString();
+					   if (extendedAttributes.containsKey(key))
+					      gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+extendedAttributes.get(key).toString();
+					   else
+						   gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+".";
 				   }
 				   
 				   gtString=gtString+"\t";
@@ -346,7 +358,7 @@ public class VCFFile {
 		final CloseableIterator<VariantContext> variantIterator = vcfFileReader.iterator();
 		while (variantIterator.hasNext()) {
 			final VariantContext vc = variantIterator.next();
-			if (vc.getStart()==31279271)
+			if (vc.getStart()==1770788)
 				System.out.println("found!");
 			System.out.println(caller+" "+vc.getContig()+":"+vc.getStart());
 			// Set<String> filters=vc.getFilters();
