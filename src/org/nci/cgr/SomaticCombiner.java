@@ -96,9 +96,22 @@ public class SomaticCombiner {
 
             System.exit(1);
         }
+		int count=0;
 		for (Caller caller:callerList) {
-			if (line.hasOption(caller.getSymbol()))
-				caller.setFilePath(line.getOptionValue(caller.getSymbol()));		
+			if (line.hasOption(caller.getSymbol())) {
+				caller.setFilePath(line.getOptionValue(caller.getSymbol()));
+				File tmpFile=new File(caller.getFilePath());
+				if (tmpFile.exists()) 
+					count++;
+				else {
+					System.out.println("Error:"+caller.getFilePath()+" does not existed! Please check for that! The program will skip this VCF file!");
+					System.exit(1);
+				}				
+			}
+		}
+		if (count<2) {
+			System.out.println("Error: Only one VCF is available. No merge needed!");
+			System.exit(1);
 		}
 		outputFilePath=line.getOptionValue("o");
 		
