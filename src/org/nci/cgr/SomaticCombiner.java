@@ -74,8 +74,10 @@ public class SomaticCombiner {
 		
 		
 		// -l T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_production_downsample\Lofreq\Lofreq_NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_WES_somatic_final.snvs.vcf.gz -L T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_production_downsample\Lofreq\Lofreq_NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_WES_somatic_final.indels.vcf.gz -u T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_production_downsample\Muse\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_passed.vcf.gz -M T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_production_downsample\Sentieon\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_WES_vt_sorted_fixed.vcf -s T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_production_downsample\Strelka\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40\results\variants\somatic.snvs.vcf.gz -S T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_production_downsample\Strelka\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40\results\variants\somatic.indels_vt_sorted.vcf.gz -o T:\DCEG\Home\wangm6\tmp2\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_4callers_voting.vcf
-		
+		// -l T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_normal_pipeline\Lofreq\Lofreq_CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1_WES_somatic_final.snvs.vcf.gz -L T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_normal_pipeline\Lofreq\Lofreq_CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1_WES_somatic_final.indels.vcf.gz -u T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_normal_pipeline\Muse\CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1_passed.vcf.gz -M T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_normal_pipeline\Sentieon\CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1_WES_vt_sorted_fixed.vcf -s T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_normal_pipeline\Strelka\CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1\results\variants\somatic.snvs.vcf.gz -S T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_normal_pipeline\Strelka\CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1\results\variants\somatic.indels_vt_sorted.vcf.gz -o T:\DCEG\Home\wangm6\tmp2\CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1_4callers_voting.vcf
 		// -l T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Lofreq\Lofreq_NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_WES_somatic_final.snvs.vcf.gz -L T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Lofreq\Lofreq_NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_WES_somatic_final.indels.vcf.gz -u T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Muse\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_passed.vcf.gz -M T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Sentieon\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_WES_vt_sorted_fixed.vcf -s T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Strelka\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40\results\variants\somatic.snvs.vcf.gz -S T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Strelka\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40\results\variants\somatic.indels_vt_sorted.vcf.gz -o T:\DCEG\Home\wangm6\tmp2\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_4callers_voting.vcf
+		
+		// -l T:\\Projects\Exome\builds\build_Dream\Results\Lofreq\Lofreq_set1_WGS_somatic_final_minus-dbsnp.snvs.vcf.gz -L T:\\Projects\Exome\builds\build_Dream\Results\Lofreq\Lofreq_set1_WGS_somatic_final_minus-dbsnp.indels_vt_sorted.vcf -M T:\\Projects\Exome\builds\build_Dream\Results\Mutect2\merged_set1_all_raw_fixed_sorted_vt_sorted.vcf -s T:\\Projects\Exome\builds\build_Dream\Results\Strelka\set1\results\variants\somatic.snvs.vcf.gz -S T:\\Projects\Exome\builds\build_Dream\Results\Strelka\set1\results\variants\somatic.indels_vt_sorted.vcf.gz -u T:\\Projects\Exome\builds\build_Dream\Results\Muse\set1.vcf -o T:\\Projects\Exome\builds\build_Dream\Results\Ensemble\set1_4callers_voting_ourown.vcf
 		initCallers();
 		CommandLineParser parser=new DefaultParser();
 		Options options=new Options();
@@ -154,8 +156,8 @@ public class SomaticCombiner {
 		for (Variant p : list) {
 			i++;
 			System.out.println(i);
-			if (p.getVariantContext().getStart()==1770788)
-				System.out.println("found!");
+//			if (p.getVariantContext().getStart()==1770788)
+//				System.out.println("found!");
 			MergedVariant mp=new MergedVariant(p.getVariantContext(), p.getCaller(),p.getPriority(),p.getSet());
 			int index=mergedList.indexOf(mp);
 			if (index!=-1) {
@@ -222,13 +224,23 @@ public class SomaticCombiner {
 		return "";
 	}
 	
-	public static String callerNameFromSymbol(String s) {		
+	public static String nameFromSymbol(String s) {		
 		for (Caller caller:callerList) {
 			if (s.equals(caller.getSymbol()))
 			return caller.getName();
 			
 		}
 		return "";
+	}
+	
+	
+	public static String callerNameFromPriority(int p) {
+		for (Caller caller:callerList) {
+			if (p==caller.getPriority())
+			return caller.getCallerName();
+			
+		}
+		return "";	
 	}
 	private static VCFFile prepareHeader() {
 		
@@ -252,6 +264,10 @@ public class SomaticCombiner {
 						vcfInfoHeaderLine=new VCFInfoHeaderLine("Vardict_QUAL", 1, VCFHeaderLineType.Float,"Vardict QUAL" );						
 						mInfoMetaData.add(vcfInfoHeaderLine);
 					}
+					vcfInfoHeaderLine=new VCFInfoHeaderLine("Tumor_AF", 1, VCFHeaderLineType.Float,"Tumor Allelic Fraction from individual VCFs based on callers priority" );						
+					mInfoMetaData.add(vcfInfoHeaderLine);
+					vcfInfoHeaderLine=new VCFInfoHeaderLine("Tumor_DP", 1, VCFHeaderLineType.Integer,"Tumor Depth retrieved from individual VCFs based on callers priority" );						
+					mInfoMetaData.add(vcfInfoHeaderLine);
 					VCFHeaderLine vcfFormatHeaderLine=new VCFFormatHeaderLine("GT", 1, VCFHeaderLineType.String,"Genotype" );
 					mInfoMetaData.add(vcfFormatHeaderLine);
 					vcfFormatHeaderLine=new VCFFormatHeaderLine("DP", 1, VCFHeaderLineType.Integer,"Total Depth" );
@@ -259,6 +275,8 @@ public class SomaticCombiner {
 					VCFFilterHeaderLine vcfFilterHeaderLine=new VCFFilterHeaderLine("LowQual","Low confidence call");
 					mInfoMetaData.add(vcfFilterHeaderLine);
 					vcfFilterHeaderLine=new VCFFilterHeaderLine("PASS","high confidence call");
+					mInfoMetaData.add(vcfFilterHeaderLine);
+					vcfFilterHeaderLine=new VCFFilterHeaderLine("WES_PASS","Adjusted high confidence call");
 					mInfoMetaData.add(vcfFilterHeaderLine);
 					firstVCFFile.mergeHeader(new VCFHeader(mInfoMetaData));					
 					firstVCF=false;

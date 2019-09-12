@@ -17,9 +17,10 @@ import htsjdk.variant.variantcontext.GenotypeBuilder;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
+import htsjdk.variant.vcf.VCFConstants;
 
 public class Variant {
-	protected VariantContext variantContext;
+	    protected VariantContext variantContext;
 	    // private String variantKey;
 	    protected String caller;
 	    protected Byte set;
@@ -32,6 +33,193 @@ public class Variant {
 	    	set=s;
 	    }
 	    	
+	    
+	    public int getTumorDP() {
+	    	if (variantContext.hasGenotypes()) {
+	    		Set<String> sampleNames=variantContext.getSampleNames();
+	    		String tumorName="";
+	    		boolean foundTumor=false;
+				for(String sampleName:sampleNames) 
+					   if (sampleName.toUpperCase().contains(VCFFile.TUMOR_TAG1)||sampleName.toUpperCase().contains(VCFFile.TUMOR_TAG2)) {
+						  tumorName=sampleName;
+						  foundTumor=true;
+						  break;
+					   }
+					  
+				if (!foundTumor) 
+		               return 0;
+		        else {
+		        	if (variantContext.getGenotype(tumorName).hasDP())
+		        	   return variantContext.getGenotype(tumorName).getDP();
+		        	else {
+		        		if (variantContext.getGenotype(tumorName).hasExtendedAttribute("ALT_F1R2") && variantContext.getGenotype(tumorName).hasExtendedAttribute("ALT_F2R1")
+		        				&& variantContext.getGenotype(tumorName).hasExtendedAttribute("REF_F1R2") && variantContext.getGenotype(tumorName).hasExtendedAttribute("REF_F2R1") ) {
+			        		int DP=Integer.parseInt(variantContext.getGenotype(tumorName).getExtendedAttribute("ALT_F1R2").toString())+
+			        		Integer.parseInt(variantContext.getGenotype(tumorName).getExtendedAttribute("ALT_F2R1").toString())+
+			        		Integer.parseInt(variantContext.getGenotype(tumorName).getExtendedAttribute("REF_F1R2").toString())+
+			        		Integer.parseInt(variantContext.getGenotype(tumorName).getExtendedAttribute("REF_F2R1").toString());
+			        		return DP;
+		        		}
+		        		else {
+		        			if (variantContext.getGenotype(tumorName).hasExtendedAttribute("Mutect2_ALT_F1R2") && variantContext.getGenotype(tumorName).hasExtendedAttribute("Mutect2_ALT_F2R1")
+			        				&& variantContext.getGenotype(tumorName).hasExtendedAttribute("Mutect2_REF_F1R2") && variantContext.getGenotype(tumorName).hasExtendedAttribute("Mutect2_REF_F2R1") ) {
+				        		int DP=Integer.parseInt(variantContext.getGenotype(tumorName).getExtendedAttribute("Mutect2_ALT_F1R2").toString())+
+				        		Integer.parseInt(variantContext.getGenotype(tumorName).getExtendedAttribute("Mutect2_ALT_F2R1").toString())+
+				        		Integer.parseInt(variantContext.getGenotype(tumorName).getExtendedAttribute("Mutect2_REF_F1R2").toString())+
+				        		Integer.parseInt(variantContext.getGenotype(tumorName).getExtendedAttribute("Mutect2_REF_F2R1").toString());
+				        		return DP;
+		        			}
+		        			else
+		        		       return 0;
+		        		
+		        		}
+		        		
+		        	}
+		        }
+	    	}
+	    	else {
+	    		Map<String,Object> info=variantContext.getAttributes();
+	    		for (String key:info.keySet()) {		
+	    			if (key=="Lofreq_DP")
+	    				return Integer.parseInt(info.get(key).toString());			
+	    		}
+	    	}
+			return 0;
+	    		
+	    }
+	    
+	    public float getTumorAF() {
+	    	String callerNameWithHighestPriority=SomaticCombiner.callerNameFromPriority(priority);
+	    	if (callerNameWithHighestPriority.equals("Strelka") || callerNameWithHighestPriority.equals("Muse")){
+	    		if (callerNameWithHighestPriority.equals("Muse")) {
+	    			if (variantContext.hasGenotype(VCFFile.TUMOR_TAG1)) {
+	    				Genotype gt=variantContext.getGenotype(VCFFile.TUMOR_TAG1);
+	    				if (gt.hasAD()) {
+	    			    int AD[]=gt.getAD();
+	    			    if (AD.length==2)
+	    			    return (float)AD[1]/ (AD[0]+AD[1]);
+	    			    else {
+	    			    	System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
+			            		  		+ "\t"+" Muse AD lenght not equal to 2 in FORMAT!");
+	    			    	return -1;
+	    				    }
+	    				}
+	    				else {
+	    					System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
+			            		  		+ "\t"+"has no Muse AD in FORMAT!");
+	    					return -1;
+	    				}
+	    			}
+	    			else {
+	    				System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+		            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
+		            		  		+ "\t"+"has no Muse AD in FORMAT!");
+	    				return -1;
+	    			}
+	    		}
+	    		else {
+	    			String gtRefKey=variantContext.getAlleles().get(0).getBaseString()+"U";
+	    			String gtAltKey=variantContext.getAlleles().get(1).getBaseString()+"U";
+	    			if (Integer.bitCount(set)>1) {
+	    				gtRefKey=callerNameWithHighestPriority+"_"+gtRefKey;
+	    				gtAltKey=callerNameWithHighestPriority+"_"+gtAltKey;
+	    			}
+	    			if (variantContext.hasGenotype(VCFFile.TUMOR_TAG1)) {
+	    			   Genotype gt=variantContext.getGenotype(VCFFile.TUMOR_TAG1);
+	    			   Map<String, Object> extendedGT = gt.getExtendedAttributes();
+	    			   String refDP[]=null;
+	    			   String altDP[]=null;
+	    			   for (String key:extendedGT.keySet()) {
+	            		  if (key.equals(gtRefKey)) 
+                             refDP= extendedGT.get(key).toString().split(",");
+	            		  
+	            		  if (key.equals(gtAltKey)) 
+	                            altDP= extendedGT.get(key).toString().split(",");
+	    			   }
+	            	   if (altDP !=null && refDP !=null && refDP.length==2 && altDP.length==2)	  
+            		     return (float)Integer.parseInt(altDP[0])/ (Integer.parseInt(refDP[0])+Integer.parseInt(altDP[0]));
+	            	   else {
+	            		  System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+	            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
+	            		  		+ "\t"+"has no strelka AU:CU:GU:TU or correct AU:CU:GU:TU in FORMAT!");
+	            		  return -1;
+	            		  
+	            	   }
+		   
+	    			 }
+	    			  
+	    			
+	    		}
+
+	    	}
+	    	else {  //Mutect, Mutect2, Lofreq, Vardict
+	    		String afName="";
+	    		if (callerNameWithHighestPriority.equals("Vardict"))
+	    			System.out.println("found");
+	    		if (Integer.bitCount(set)>1) {
+		    	   	if (callerNameWithHighestPriority.equals("Mutect")) 
+		    	   		afName=callerNameWithHighestPriority+"_FA";
+		    	    else
+		    	   		afName=callerNameWithHighestPriority+"_AF";
+	    		}
+	    		else {
+	    			if (callerNameWithHighestPriority.equals("Mutect")) 
+		    	   		afName="FA";
+		    	    else
+		    	   		afName="AF";
+	    			
+	    		}
+	    	   	if (callerNameWithHighestPriority.equals("Lofreq")) {
+		    		Map<String,Object> info=variantContext.getAttributes();
+		    		for (String key:info.keySet()) {		
+		    			if (key.equals(afName))
+		    				return Float.parseFloat(info.get(key).toString());	
+		    		}
+	    	   	}
+	    	   	else { //Mutect2 Mutect Vardict
+	    	   		if (variantContext.hasGenotypes()) {
+	    	   			boolean foundTumor=false;
+	    	   			String tumorSampleName="";
+	    	   			Set<String> sampleNames=variantContext.getSampleNames();
+	    				for(String sampleName:sampleNames) 
+	    					   if (sampleName.toUpperCase().contains(VCFFile.TUMOR_TAG1)||sampleName.toUpperCase().contains(VCFFile.TUMOR_TAG2)) {
+	    						  tumorSampleName=sampleName;
+	    						  foundTumor=true;  
+	    						  break;
+	    					   }
+	    				if (!foundTumor) {
+	    					System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
+			            		  		+ "\t"+"has no Tumor sample in FORMAT for "+ callerNameWithHighestPriority+" calling!");
+		    	   			
+	    				}
+	    				else {
+		    			   Genotype gt=variantContext.getGenotype(tumorSampleName);
+		    			   Map<String, Object> extendedGT = gt.getExtendedAttributes();
+		    			   
+		    			   for (String key:extendedGT.keySet()) 
+		            		  if (key.equals(afName)) 
+	                             return Float.parseFloat(extendedGT.get(afName).toString());	  
+		    			   System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
+			            		  		+ "\t"+"has no AF in FORMAT for "+callerNameWithHighestPriority+" calling!");	
+		    			   
+	     
+		    			   }
+	    	   		}
+		    	    else 
+	    	   			System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+		            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
+		            		  		+ "\t"+"has no AF in FORMAT for "+ callerNameWithHighestPriority+" calling!");
+	    	   				    	   			    	   		
+	    	   	}
+	    	}
+			return -1;
+	    		
+	    }
+	    
 	    public static Comparator<Variant> VariantComparator = new Comparator<Variant>() {
 	    	public int compare(Variant v1, Variant v2 ) {
 	    	   String contig1 = v1.getVariantContext().getContig();
