@@ -90,20 +90,41 @@ public class Variant {
 	    
 	    public float getTumorAF() {
 	    	String callerNameWithHighestPriority=SomaticCombiner.callerNameFromPriority(priority);
-	    	if (callerNameWithHighestPriority.equals("Strelka") || callerNameWithHighestPriority.equals("Muse")){
-	    		if (callerNameWithHighestPriority.equals("Muse")) {
-	    			if (variantContext.hasGenotype(VCFFile.TUMOR_TAG1)) {
+	    	if (callerNameWithHighestPriority.equals("Strelka") || callerNameWithHighestPriority.equals("Muse") || callerNameWithHighestPriority.equals("Varscan")){
+	    		if (callerNameWithHighestPriority.equals("Muse") || callerNameWithHighestPriority.equals("Varscan") ) {
+	    			if (variantContext.hasGenotype(VCFFile.TUMOR_TAG1) ) {
 	    				Genotype gt=variantContext.getGenotype(VCFFile.TUMOR_TAG1);
 	    				if (gt.hasAD()) {
-	    			    int AD[]=gt.getAD();
-	    			    if (AD.length==2)
-	    			    return (float)AD[1]/ (AD[0]+AD[1]);
-	    			    else {
-	    			    	System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
-			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
-			            		  		+ "\t"+" Muse AD lenght not equal to 2 in FORMAT!");
-	    			    	return -1;
-	    				    }
+		    			    int AD[]=gt.getAD();
+		    			    if (AD.length==2)
+			    			    return (float)AD[1]/ (AD[0]+AD[1]);
+		    			    else {
+		    			    	if (AD.length==1) {
+			    			    	if (gt.hasDP()) {
+			    			    		if (gt.getDP()>0)
+			    			    		  return (float) AD[0]/gt.getDP();
+			    			    		else {
+			    			    			System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+			   			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
+			   			            		  		+ "\t"+" Varscan has DP is 0 in FORMAT!");
+			   	    			    	    return -1;
+			    			    		}
+			    			    	}
+			    			    	else {
+			    			    		System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+			   			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
+			   			            		  		+ "\t"+" Varscan has no DP in FORMAT!");
+			   	    			    	    return -1;
+			    			    		
+			    			    	}
+		    			    	}
+		    			    	else {
+			    			    	System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+					            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
+					            		  		+ "\t"+" Muse or Varscan AD lenght not equal to 2 or 1 in FORMAT!");
+			    			    	return -1;
+		    				    }
+		    			    }
 	    				}
 	    				else {
 	    					System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
@@ -144,20 +165,17 @@ public class Variant {
 	            		  System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
 	            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
 	            		  		+ "\t"+"has no strelka AU:CU:GU:TU or correct AU:CU:GU:TU in FORMAT!");
-	            		  return -1;
-	            		  
+	            		  return -1;  
 	            	   }
-		   
 	    			 }
-	    			  
-	    			
+	    			      			
 	    		}
 
 	    	}
 	    	else {  //Mutect, Mutect2, Lofreq, Vardict
 	    		String afName="";
-	    		if (callerNameWithHighestPriority.equals("Vardict"))
-	    			System.out.println("found");
+//	    		if (callerNameWithHighestPriority.equals("Vardict"))
+//	    			System.out.println("found");
 	    		if (Integer.bitCount(set)>1) {
 		    	   	if (callerNameWithHighestPriority.equals("Mutect")) 
 		    	   		afName=callerNameWithHighestPriority+"_FA";
@@ -178,42 +196,44 @@ public class Variant {
 		    				return Float.parseFloat(info.get(key).toString());	
 		    		}
 	    	   	}
-	    	   	else { //Mutect2 Mutect Vardict
-	    	   		if (variantContext.hasGenotypes()) {
-	    	   			boolean foundTumor=false;
-	    	   			String tumorSampleName="";
-	    	   			Set<String> sampleNames=variantContext.getSampleNames();
-	    				for(String sampleName:sampleNames) 
-	    					   if (sampleName.toUpperCase().contains(VCFFile.TUMOR_TAG1)||sampleName.toUpperCase().contains(VCFFile.TUMOR_TAG2)) {
-	    						  tumorSampleName=sampleName;
-	    						  foundTumor=true;  
-	    						  break;
-	    					   }
-	    				if (!foundTumor) {
-	    					System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+	    	   	else { //Mutect2 Mutect Vardict VarScan
+	    	   		
+		    	   		if (variantContext.hasGenotypes()) {
+		    	   			boolean foundTumor=false;
+		    	   			String tumorSampleName="";
+		    	   			Set<String> sampleNames=variantContext.getSampleNames();
+		    				for(String sampleName:sampleNames) 
+		    					   if (sampleName.toUpperCase().contains(VCFFile.TUMOR_TAG1)||sampleName.toUpperCase().contains(VCFFile.TUMOR_TAG2)) {
+		    						  tumorSampleName=sampleName;
+		    						  foundTumor=true;  
+		    						  break;
+		    					   }
+		    				if (!foundTumor) {
+		    					System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+				            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
+				            		  		+ "\t"+"has no Tumor sample in FORMAT for "+ callerNameWithHighestPriority+" calling!");
+			    	   			
+		    				}
+		    				else {
+			    			   Genotype gt=variantContext.getGenotype(tumorSampleName);
+			    			   Map<String, Object> extendedGT = gt.getExtendedAttributes();
+			    			   
+			    			   for (String key:extendedGT.keySet()) 
+			            		  if (key.equals(afName)) 
+		                             return Float.parseFloat(extendedGT.get(afName).toString());	  
+			    			   System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+				            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
+				            		  		+ "\t"+"has no AF in FORMAT for "+callerNameWithHighestPriority+" calling!");	
+			    			   
+		     
+			    			   }
+		    	   		}
+			    	    else 
+		    	   			System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
 			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
-			            		  		+ "\t"+"has no Tumor sample in FORMAT for "+ callerNameWithHighestPriority+" calling!");
-		    	   			
-	    				}
-	    				else {
-		    			   Genotype gt=variantContext.getGenotype(tumorSampleName);
-		    			   Map<String, Object> extendedGT = gt.getExtendedAttributes();
-		    			   
-		    			   for (String key:extendedGT.keySet()) 
-		            		  if (key.equals(afName)) 
-	                             return Float.parseFloat(extendedGT.get(afName).toString());	  
-		    			   System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
-			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
-			            		  		+ "\t"+"has no AF in FORMAT for "+callerNameWithHighestPriority+" calling!");	
-		    			   
-	     
-		    			   }
-	    	   		}
-		    	    else 
-	    	   			System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
-		            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
-		            		  		+ "\t"+"has no AF in FORMAT for "+ callerNameWithHighestPriority+" calling!");
+			            		  		+ "\t"+"has no AF in FORMAT for "+ callerNameWithHighestPriority+" calling!");
 	    	   				    	   			    	   		
+	    	     	
 	    	   	}
 	    	}
 			return -1;

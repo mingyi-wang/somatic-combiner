@@ -115,8 +115,8 @@ public class MergedVariant extends Variant
 							Map<String, Object> thisExtendedGT = thisGenotypes.get(thisSamples[i]).getExtendedAttributes();
 							Map<String, Object> otherExtendedGT = otherGenotypes.get(otherSamples[i]).getExtendedAttributes();
 							for (String key : thisExtendedGT.keySet()) {
-								if (key.contains("FDP")) 
-									System.out.println("Found!");
+//								if (key.contains("FDP")) 
+//									System.out.println("Found!");
 								
 								if (multipleCallerCalled)
 									mergedExtendedGT.put(key, thisExtendedGT.get(key));

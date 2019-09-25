@@ -78,6 +78,10 @@ public class SomaticCombiner {
 		// -l T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Lofreq\Lofreq_NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_WES_somatic_final.snvs.vcf.gz -L T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Lofreq\Lofreq_NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_WES_somatic_final.indels.vcf.gz -u T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Muse\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_passed.vcf.gz -M T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Sentieon\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_WES_vt_sorted_fixed.vcf -s T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Strelka\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40\results\variants\somatic.snvs.vcf.gz -S T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Strelka\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40\results\variants\somatic.indels_vt_sorted.vcf.gz -o T:\DCEG\Home\wangm6\tmp2\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_4callers_voting.vcf
 		
 		// -l T:\\Projects\Exome\builds\build_Dream\Results\Lofreq\Lofreq_set1_WGS_somatic_final_minus-dbsnp.snvs.vcf.gz -L T:\\Projects\Exome\builds\build_Dream\Results\Lofreq\Lofreq_set1_WGS_somatic_final_minus-dbsnp.indels_vt_sorted.vcf -M T:\\Projects\Exome\builds\build_Dream\Results\Mutect2\merged_set1_all_raw_fixed_sorted_vt_sorted.vcf -s T:\\Projects\Exome\builds\build_Dream\Results\Strelka\set1\results\variants\somatic.snvs.vcf.gz -S T:\\Projects\Exome\builds\build_Dream\Results\Strelka\set1\results\variants\somatic.indels_vt_sorted.vcf.gz -u T:\\Projects\Exome\builds\build_Dream\Results\Muse\set1.vcf -o T:\\Projects\Exome\builds\build_Dream\Results\Ensemble\set1_4callers_voting_ourown.vcf
+		
+		// -l T:\DCEG\Projects\Exome\builds\build_Dream\Results\Lofreq\Lofreq_COLO_WGS_somatic_final_minus-dbsnp.snvs.vcf -L T:\DCEG\Projects\Exome\builds\build_Dream\Results\Lofreq\Lofreq_COLO_WGS_somatic_final_minus-dbsnp.indels_vt_sorted.vcf -M T:\DCEG\Projects\Exome\builds\build_Dream\Results\Mutect2\merged_COLO_all_raw_fixed_sorted_vt_sorted.vcf -s T:\DCEG\Projects\Exome\builds\build_Dream\Results\Strelka\COLO\results\variants\somatic.snvs.vcf.gz -S T:\DCEG\Projects\Exome\builds\build_Dream\Results\Strelka\COLO\results\variants\somatic.indels_vt_sorted.vcf.gz -u T:\DCEG\Projects\Exome\builds\build_Dream\Results\Muse\COLO.vcf -o T:\DCEG\Projects\Exome\builds\build_Dream\Results\Ensemble\COLO_4callers_voting_ourown.vcf
+		
+		// -l T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Lofreq\Lofreq_2_80_20_WES_somatic_final.snvs.vcf.gz -L T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Lofreq\Lofreq_2_80_20_WES_somatic_final.indels.vcf.gz -M T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Sentieon\2_80_20_WES_vt_sorted.vcf.gz -s T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Strelka\2_80_20\results\variants\somatic.snvs.vcf.gz -S T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Strelka\2_80_20\results\variants\somatic.indels_vt_sorted.vcf.gz -v T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Vardict_0919\Vardict_merged_2_80_20_final_vt_sorted.vcf.gz -o T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Ensemble\2_80_20_4callers_voting.vcf
 		initCallers();
 		CommandLineParser parser=new DefaultParser();
 		Options options=new Options();
@@ -156,14 +160,14 @@ public class SomaticCombiner {
 		for (Variant p : list) {
 			i++;
 			System.out.println(i);
-//			if (p.getVariantContext().getStart()==1770788)
-//				System.out.println("found!");
+//			if (i==37474)
+				System.out.println(p.getVariantContext().getContig()+"\t"+p.getVariantContext().getStart());
 			MergedVariant mp=new MergedVariant(p.getVariantContext(), p.getCaller(),p.getPriority(),p.getSet());
 			int index=mergedList.indexOf(mp);
 			if (index!=-1) {
 				MergedVariant mergedVariant=mergedList.get(index).merge(mp);
 				if (mergedVariant==null)
-					mergedList.add((MergedVariant) p);
+					mergedList.add(new MergedVariant(p.getVariantContext(), p.getCaller(),p.getPriority(),p.getSet()));
 				else
 				    mergedList.set(index, mergedVariant);
 			}
@@ -204,15 +208,16 @@ public class SomaticCombiner {
 	
 	private  static  void initCallers() {
 		SomaticCombiner.callerList=new ArrayList<Caller>();
-		callerList.add(new Caller("lofreq-snv", "Lofreq SNV VCF file" , "l", (byte) 0b001000, 1,"SNV","Lofreq"));
-		callerList.add(new Caller("lofreq-indel", "Lofreq INDEL VCF file" , "L", (byte) 0b001000, 1,"INDEL","Lofreq"));
-		callerList.add(new Caller("strelka-snv", "Strelka SNV VCF file" , "s", (byte) 0b000100, 2,"SNV","Strelka"));
-		callerList.add(new Caller("strelka-indel", "Strelka INDEL VCF file" , "S", (byte) 0b000100, 2,"INDEL","Strelka"));
-		callerList.add(new Caller("muse", "Muse VCF file" , "u", (byte) 0b000010, 4,"SNV","Muse"));
-		callerList.add(new Caller("mutect", "Mutect VCF file" , "m", (byte) 0b100000, 5,"SNV","Mutect"));
-		callerList.add(new Caller("mutect2", "Mutect2 VCF file" , "M", (byte) 0b010000, 6,"BOTH","Mutect2"));
-		callerList.add(new Caller("vardict", "Vardict VCF file" , "v", (byte) 0b000001, 3,"BOTH","Vardict"));
-		
+		callerList.add(new Caller("lofreq-snv", "Lofreq SNV VCF file" , "l", (byte) 0b0010000, 2,"SNV","Lofreq"));
+		callerList.add(new Caller("lofreq-indel", "Lofreq INDEL VCF file" , "L", (byte) 0b0010000, 2,"INDEL","Lofreq"));
+		callerList.add(new Caller("strelka-snv", "Strelka SNV VCF file" , "s", (byte) 0b0001000, 3,"SNV","Strelka"));
+		callerList.add(new Caller("strelka-indel", "Strelka INDEL VCF file" , "S", (byte) 0b0001000, 3,"INDEL","Strelka"));
+		callerList.add(new Caller("muse", "Muse VCF file" , "u", (byte) 0b000010, 5,"SNV","Muse"));
+		callerList.add(new Caller("mutect", "Mutect VCF file" , "m", (byte) 0b1000000, 6,"SNV","Mutect"));
+		callerList.add(new Caller("mutect2", "Mutect2 VCF file" , "M", (byte) 0b0100000, 7,"BOTH","Mutect2"));
+		callerList.add(new Caller("vardict", "Vardict VCF file" , "D", (byte) 0b0000010, 4,"BOTH","Vardict"));
+		callerList.add(new Caller("varscan-snv", "Varscan SNV VCF file" , "v", (byte) 0b0000001, 1,"SNV","Varscan"));
+		callerList.add(new Caller("varscan-indel", "Varscan INDEL VCF file" , "V", (byte) 0b0000001, 1,"INDEL","Varscan"));
 	}
 
 	public static String callerName(String name) {		

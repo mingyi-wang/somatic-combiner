@@ -63,8 +63,8 @@ public class VCFFile {
 
 
 	public void writeVariants(BufferedWriter bw,Variant vv, int snvCallerNum,int indelCallerNum) throws IOException, ClassNotFoundException {
-		if (vv.getVariantContext().getStart()==1719146)
-			System.out.println("found!");
+//		if (vv.getVariantContext().getStart()==1719146)
+//			System.out.println("found!");
 		
 		Variant variant=new Variant(vv.getVariantContext(),vv.getCaller(),vv.getPriority(),vv.getSet());
 		// variant.g
@@ -200,9 +200,11 @@ public class VCFFile {
 			//		  || vv.getCaller().contains("vardict") && vv.getCaller().contains("lofreq")) 
 			if (Integer.bitCount(vv.getSet())>=2) 
 					WESPass="WES_PASS";
-			if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") ) 
+		    //if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") )
+		    if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && Integer.bitCount(vv.getSet())>=1 )
 				WESPass="WES_PASS";
-			if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))
+		    //if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))
+			if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && Integer.bitCount(vv.getSet())>1)	
 					WESPass="WES_PASS";
 			
 //			if (vv.getCaller().contains("strelka"))
@@ -232,9 +234,17 @@ public class VCFFile {
 //						WESPass="WES_PASS";
 //			 }
 		}
-		else {	
-			if ((float)Integer.bitCount(vv.getSet()) / indelCallerNum >= 0.5)
+		else {
+			tumorAF=vv.getTumorAF();
+			tumorDP=vv.getTumorDP();
+			if ((float)Integer.bitCount(vv.getSet()) / indelCallerNum > 0.5)
 				WESPass="WES_PASS";
+		    //if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") )
+			if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && Integer.bitCount(vv.getSet())>=1 )
+				WESPass="WES_PASS";
+			//if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))
+			if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && Integer.bitCount(vv.getSet())>1)	
+					WESPass="WES_PASS";
 		}
 		
 		if (vv.getVariantContext().isSNP()) {
@@ -250,13 +260,13 @@ public class VCFFile {
 		}
 						
 		bw.append(infoContent);
-		if (vv.getVariantContext().isSNP()) {
-			if (tumorAF!=-1)
-			    bw.append("Tumor_AF="+tumorAF+";");
-			if (tumorDP>0)
-				bw.append("Tumor_DP="+tumorDP+";");
+		// if (vv.getVariantContext().isSNP()) {
+		if (tumorAF!=-1)
+		    bw.append("Tumor_AF="+tumorAF+";");
+		if (tumorDP>0)
+			bw.append("Tumor_DP="+tumorDP+";");
 			
-		}
+		// }
 		bw.append(SomaticCombiner.COUNT_TAG+"="+Integer.bitCount(vv.getSet())+VCFConstants.INFO_FIELD_SEPARATOR+SomaticCombiner.callerSymbols+"="+voting(vv));
 		
 		bw.append("\t"+format);
