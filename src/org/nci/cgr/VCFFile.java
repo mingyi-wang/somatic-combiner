@@ -200,11 +200,11 @@ public class VCFFile {
 			//		  || vv.getCaller().contains("vardict") && vv.getCaller().contains("lofreq")) 
 			if (Integer.bitCount(vv.getSet())>=2) 
 					WESPass="WES_PASS";
-		    //if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") )
-		    if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && Integer.bitCount(vv.getSet())>=1 )
+		    if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") )
+		    // if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && Integer.bitCount(vv.getSet())>=1 )
 				WESPass="WES_PASS";
-		    //if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))
-			if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && Integer.bitCount(vv.getSet())>1)	
+		    if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))
+			// if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && Integer.bitCount(vv.getSet())>1)	
 					WESPass="WES_PASS";
 			
 //			if (vv.getCaller().contains("strelka"))
@@ -237,13 +237,13 @@ public class VCFFile {
 		else {
 			tumorAF=vv.getTumorAF();
 			tumorDP=vv.getTumorDP();
-			if ((float)Integer.bitCount(vv.getSet()) / indelCallerNum > 0.5)
+			if ((float)Integer.bitCount(vv.getSet()) / indelCallerNum >= 0.5)
 				WESPass="WES_PASS";
-		    //if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") )
-			if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && Integer.bitCount(vv.getSet())>=1 )
+		    if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") )
+			// if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && Integer.bitCount(vv.getSet())>=1 )
 				WESPass="WES_PASS";
-			//if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))
-			if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && Integer.bitCount(vv.getSet())>1)	
+			if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))
+			// if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && Integer.bitCount(vv.getSet())>1)	
 					WESPass="WES_PASS";
 		}
 		
