@@ -128,9 +128,9 @@ public class SomaticCombiner {
 		for (Caller caller:callerList) {
 			if (caller.getFilePath()!=null) {
 				VCFFile vcfFile=new VCFFile(caller.getFilePath(),caller.getName(),caller.getPriority(),caller.getSet());
-				if (caller.getName().contains("strelka-indel")) {
-					System.out.println("Found!");
-				}
+//				if (caller.getName().contains("strelka-indel")) {
+//					System.out.println("Found!");
+//				}
 			    if(vcfFile.importVariants(list)>0) {
 			    	caller.setVcfFile(vcfFile);
 			    	callerSymbols+=caller.getSymbol();
@@ -160,7 +160,7 @@ public class SomaticCombiner {
 		for (Variant p : list) {
 			i++;
 			System.out.println(i);
-//			if (i==37474)
+			if (p.getVariantContext().getStart()==6263642)
 				System.out.println(p.getVariantContext().getContig()+"\t"+p.getVariantContext().getStart());
 			MergedVariant mp=new MergedVariant(p.getVariantContext(), p.getCaller(),p.getPriority(),p.getSet());
 			int index=mergedList.indexOf(mp);
@@ -212,7 +212,7 @@ public class SomaticCombiner {
 		callerList.add(new Caller("lofreq-indel", "Lofreq INDEL VCF file" , "L", (byte) 0b0010000, 2,"INDEL","Lofreq"));
 		callerList.add(new Caller("strelka-snv", "Strelka SNV VCF file" , "s", (byte) 0b0001000, 3,"SNV","Strelka"));
 		callerList.add(new Caller("strelka-indel", "Strelka INDEL VCF file" , "S", (byte) 0b0001000, 3,"INDEL","Strelka"));
-		callerList.add(new Caller("muse", "Muse VCF file" , "u", (byte) 0b000010, 5,"SNV","Muse"));
+		callerList.add(new Caller("muse", "Muse VCF file" , "u", (byte) 0b0000100, 5,"SNV","Muse"));
 		callerList.add(new Caller("mutect", "Mutect VCF file" , "m", (byte) 0b1000000, 6,"SNV","Mutect"));
 		callerList.add(new Caller("mutect2", "Mutect2 VCF file" , "M", (byte) 0b0100000, 7,"BOTH","Mutect2"));
 		callerList.add(new Caller("vardict", "Vardict VCF file" , "D", (byte) 0b0000010, 4,"BOTH","Vardict"));
@@ -277,11 +277,13 @@ public class SomaticCombiner {
 					mInfoMetaData.add(vcfFormatHeaderLine);
 					vcfFormatHeaderLine=new VCFFormatHeaderLine("DP", 1, VCFHeaderLineType.Integer,"Total Depth" );
 					mInfoMetaData.add(vcfFormatHeaderLine);
-					VCFFilterHeaderLine vcfFilterHeaderLine=new VCFFilterHeaderLine("LowQual","Low confidence call");
+					VCFFilterHeaderLine vcfFilterHeaderLine=new VCFFilterHeaderLine("LowConf","Low confidence call");
 					mInfoMetaData.add(vcfFilterHeaderLine);
 					vcfFilterHeaderLine=new VCFFilterHeaderLine("PASS","high confidence call");
 					mInfoMetaData.add(vcfFilterHeaderLine);
-					vcfFilterHeaderLine=new VCFFilterHeaderLine("WES_PASS","Adjusted high confidence call");
+					vcfFilterHeaderLine=new VCFFilterHeaderLine("ADJ_PASS","Adjusted high confidence call");
+					mInfoMetaData.add(vcfFilterHeaderLine);
+					vcfFilterHeaderLine=new VCFFilterHeaderLine("ADJ_LowConf","Adjusted low confidence call");
 					mInfoMetaData.add(vcfFilterHeaderLine);
 					firstVCFFile.mergeHeader(new VCFHeader(mInfoMetaData));					
 					firstVCF=false;

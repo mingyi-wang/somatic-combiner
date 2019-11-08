@@ -172,21 +172,28 @@ public class Variant {
 	    		}
 
 	    	}
-	    	else {  //Mutect, Mutect2, Lofreq, Vardict
+	    	else {  //Mutect, Mutect2, Lofreq, Vardict, Varscan, Sniper
 	    		String afName="";
 //	    		if (callerNameWithHighestPriority.equals("Vardict"))
 //	    			System.out.println("found");
 	    		if (Integer.bitCount(set)>1) {
 		    	   	if (callerNameWithHighestPriority.equals("Mutect")) 
 		    	   		afName=callerNameWithHighestPriority+"_FA";
-		    	    else
-		    	   		afName=callerNameWithHighestPriority+"_AF";
+		    	    else 
+		    	   		    afName=callerNameWithHighestPriority+"_AF";
+		    	   		
+		    	    
 	    		}
 	    		else {
 	    			if (callerNameWithHighestPriority.equals("Mutect")) 
 		    	   		afName="FA";
-		    	    else
-		    	   		afName="AF";
+		    	    else {
+		    	    	if (callerNameWithHighestPriority.equals("Somaticsniper"))
+		    	    		afName="DP4";
+		    	    	else
+		    	    		afName="AF";
+		    	   		
+		    	    }
 	    			
 	    		}
 	    	   	if (callerNameWithHighestPriority.equals("Lofreq")) {
@@ -220,10 +227,13 @@ public class Variant {
 			    			   
 			    			   for (String key:extendedGT.keySet()) 
 			            		  if (key.equals(afName)) 
-		                             return Float.parseFloat(extendedGT.get(afName).toString());	  
+			            			  
+		                                 return Float.parseFloat(extendedGT.get(afName).toString());
+		                             
+			            		  
 			    			   System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
 				            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
-				            		  		+ "\t"+"has no AF in FORMAT for "+callerNameWithHighestPriority+" calling!");	
+				            		  		+ "\t"+"has no AF or DP in FORMAT for "+callerNameWithHighestPriority+" calling!");	
 			    			   
 		     
 			    			   }

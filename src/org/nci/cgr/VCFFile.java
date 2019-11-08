@@ -63,8 +63,8 @@ public class VCFFile {
 
 
 	public void writeVariants(BufferedWriter bw,Variant vv, int snvCallerNum,int indelCallerNum) throws IOException, ClassNotFoundException {
-//		if (vv.getVariantContext().getStart()==1719146)
-//			System.out.println("found!");
+		if (vv.getVariantContext().getStart()==6263642)
+			System.out.println("found!");
 		
 		Variant variant=new Variant(vv.getVariantContext(),vv.getCaller(),vv.getPriority(),vv.getSet());
 		// variant.g
@@ -188,7 +188,7 @@ public class VCFFile {
 		        infoContent=infoContent+key+"="+info.get(key).toString().replace("[", "").replace("]", "")+VCFConstants.INFO_FIELD_SEPARATOR;			
 		}
 		bw.append(".\t");
-		String WESPass="WES_LowConf";
+		String WESPass="ADJ_LowConf";
 		float tumorAF=0;
 		int tumorDP=0;
 		if (vv.getVariantContext().isSNP()) {
@@ -198,14 +198,14 @@ public class VCFFile {
 			// deep sequencing
 			// if (vv.getCaller().contains("strelka") && vv.getCaller().contains("lofreq") || vv.getCaller().contains("strelka") && vv.getCaller().contains("vardict")
 			//		  || vv.getCaller().contains("vardict") && vv.getCaller().contains("lofreq")) 
-			if (Integer.bitCount(vv.getSet())>=2) 
-					WESPass="WES_PASS";
+			if ((float)Integer.bitCount(vv.getSet()) / snvCallerNum >= 0.5) 
+				WESPass="ADJ_PASS";
 		    if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") )
 		    // if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && Integer.bitCount(vv.getSet())>=1 )
-				WESPass="WES_PASS";
+				WESPass="ADJ_PASS";
 		    if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))
-			// if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && Integer.bitCount(vv.getSet())>1)	
-					WESPass="WES_PASS";
+//			// if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && Integer.bitCount(vv.getSet())>1)	
+				WESPass="ADJ_PASS";
 			
 //			if (vv.getCaller().contains("strelka"))
 //					WESPass="WES_PASS";
@@ -238,25 +238,25 @@ public class VCFFile {
 			tumorAF=vv.getTumorAF();
 			tumorDP=vv.getTumorDP();
 			if ((float)Integer.bitCount(vv.getSet()) / indelCallerNum >= 0.5)
-				WESPass="WES_PASS";
-		    if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") )
+				WESPass="ADJ_PASS";
+		   // if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") )
 			// if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && Integer.bitCount(vv.getSet())>=1 )
-				WESPass="WES_PASS";
-			if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))
+			//	WESPass="WES_PASS";
+			//if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))
 			// if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && Integer.bitCount(vv.getSet())>1)	
-					WESPass="WES_PASS";
+				//	WESPass="WES_PASS";
 		}
 		
 		if (vv.getVariantContext().isSNP()) {
 			if ((float)Integer.bitCount(vv.getSet()) / snvCallerNum >= 0.5)
 				bw.append("PASS" + ";"+WESPass+"\t");
 			else
-				bw.append("LowQual" + ";"+WESPass+"\t");
+				bw.append("LowConf" + ";"+WESPass+"\t");
 		} else {
 			if ((float)Integer.bitCount(vv.getSet()) / indelCallerNum >= 0.5)
 				bw.append("PASS"  + ";"+WESPass+"\t");
 			else
-				bw.append("LowQual"  + ";"+WESPass+ "\t");
+				bw.append("LowConf"  + ";"+WESPass+ "\t");
 		}
 						
 		bw.append(infoContent);
@@ -427,13 +427,16 @@ public class VCFFile {
 		final CloseableIterator<VariantContext> variantIterator = vcfFileReader.iterator();
 		while (variantIterator.hasNext()) {
 			final VariantContext vc = variantIterator.next();
-			if (vc.getStart()==44985825)
-				System.out.println("found!");
+//			if (vc.getStart()==44985825)
+//				System.out.println("found!");
 			System.out.println(caller+" "+vc.getContig()+":"+vc.getStart());
 			// Set<String> filters=vc.getFilters();
+			
 			Boolean ff = vc.isFiltered();
 			Set<String> filters = vc.getFilters();
 			String filterContent = "";
+//			if (caller.equals("Somaticsniper"))
+//				ff=false;
 
 			if (!filters.isEmpty()) {
 				Iterator<String> iter = filters.iterator();
