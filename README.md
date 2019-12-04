@@ -1,5 +1,5 @@
 # somatic-combiner
-A consensus ensemble approach which can combine somatic variants VCFs generated from seven popular callers: Lofreq, Muse, Mutect2, Mutect, Strelka, VarDict and VarScan.
+A consensus ensemble approach which can combine somatic variants VCFs generated from seven popular callers: LoFreq, MuSE, MuTect2, MuTect, Strelka, VarDict and VarScan.
 
 ## Prerequisite
 java jdk or jre v1.8 or above
@@ -25,5 +25,5 @@ cd example && sh ./run_combine_example.sh
 2. The program can merge any two or more VCFs for seven callers.
 3. Only "PASS" in the FILTER column will be used for the merge process.
 4. For the individual VCF, in the header line, the sample columns must contain "TUMOR" or "NORMAL" (case insenstitive though) to distiguish two samples. The Lofreq VCF can leave empty for those columns since it does not return sample columns.
-5. "GT:DP:AD" values in the output VCF will take the values according to priority order: Mutect2 > Mutect > Muse > Vardict > Strelka > Lofreq.
+5. "GT:DP:AD" values in the output VCF will take the values according to the priority order: MuTect2 > MuTect > MuSE > VarDict > Strelka > LoFreq > VarScan.
 6. The output VCF is a superset of all VCFs. In the output VCF, the calling status will be annotated by in the INFO column (e.g., "NumCallers=6;lLsSumMv=10101111") and tagged as "PASS" or "ADJ_PASS" in the FILTER column. 
