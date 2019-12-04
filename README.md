@@ -1,13 +1,13 @@
 # somatic-combiner
 A consensus ensemble approach which can combine somatic variants VCFs generated from seven popular callers: Lofreq, Muse, Mutect2, Mutect, Strelka, VarDict and VarScan.
 
-##Requirements
+## Requirements
 To run this software, java jdk or jre v1.8
 
-##Installation
+## Installation
 git clone https://github.com/mingyi-wang/somatic-combiner.git
 
-##Usage
+## Usage
 - Command line:
 The input VCF files can be .gz files.
 java -jar somaticCombiner.jar -L ${LoFreq_INDEL_VCF} -l ${LoFreq_SNV_VCF} -u ${MuSE_VCF} -M ${MuTect2_VCF} -m ${MuTect_VCF} -s ${Strelka_SNV_VCF} -S ${Strelka_INDEL_VCF} -v ${VarScan_SNV_VCF} -V ${Varscan_INDEL_VCF} -D ${VarDict_VCF} -o ${OUTPUT_VCF}
@@ -16,7 +16,7 @@ Using the example VCF files in the example folder to run test
 cd example
 sh ./run_combine_example.sh
 
-##Notes
+## Notes
 1. All the VCFs must be called from a same tumor/normal paired BAMs and reference genome. The VCFs with INDELs must do vt normalization before merge.
 2. The program can merge any two or more VCFs for seven callers.
 3. Only "PASS" in the FILTER column will be used for the merge process.
