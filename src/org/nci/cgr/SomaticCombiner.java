@@ -38,6 +38,7 @@ public class SomaticCombiner {
 	public final static String COUNT_TAG="NumCallers";
 	public static String callerSymbols="";
 	public static String callerNames="";
+	public static ArrayList<String> medianAFs=new ArrayList<String>();
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 		// TODO Auto-generated method stub
 		// TODO Auto-generated method stub
@@ -160,8 +161,8 @@ public class SomaticCombiner {
 		for (Variant p : list) {
 			i++;
 			System.out.println(i);
-			if (p.getVariantContext().getStart()==6263642)
-				System.out.println(p.getVariantContext().getContig()+"\t"+p.getVariantContext().getStart());
+//			if (p.getVariantContext().getStart()==6263642)
+//				System.out.println(p.getVariantContext().getContig()+"\t"+p.getVariantContext().getStart());
 			MergedVariant mp=new MergedVariant(p.getVariantContext(), p.getCaller(),p.getPriority(),p.getSet());
 			int index=mergedList.indexOf(mp);
 			if (index!=-1) {
@@ -194,16 +195,68 @@ public class SomaticCombiner {
 		BufferedWriter bw=new BufferedWriter(new FileWriter(new File(outputFilePath)));
 		VCFFile firstVCFFile=prepareHeader();	
 		VCFFile.writeHeader(firstVCFFile.getmHeader(), bw);
+		
+//		System.out.println("Calculating Median AF for each fragment ...");
+//		String currentContig="";
+//		int currentStart=0;
+//		i=0;
+//		ArrayList<Float> tumorAFs=new ArrayList<Float>();
+//		for (Variant p : mergedList) {
+//			if (i==0) {
+//				currentContig=p.variantContext.getContig();
+//			    currentStart=p.variantContext.getStart();
+//			}
+//
+//
+//			if ((p.variantContext.getContig()==currentContig)&&(p.variantContext.getStart()<=currentStart+500)){
+//			
+//
+//			   float tumorAF=firstVCFFile.segmentVariants(p,snvCallerNum,indelCallerNum);
+//			   if (tumorAF>0 && tumorAF<=1)
+//				   tumorAFs.add(tumorAF);
+//			}
+//			else {
+//				if (tumorAFs.size()>0) {
+//					Collections.sort(tumorAFs);
+//					float median;
+//					if(tumorAFs.size()%2==0) {
+//				      float sumOfMiddleElements= tumorAFs.get(tumorAFs.size()/2)+tumorAFs.get(tumorAFs.size()/2-1);
+//				      median=((float)sumOfMiddleElements/2);
+//					}
+//					else
+//						median=(float)tumorAFs.get(tumorAFs.size()/2);
+//					if (median<=0.1) {
+//						medianAFs.add(currentContig+":"+currentStart+":"+median+":"+tumorAFs.size());
+//						System.out.println(currentContig+":"+currentStart+":"+median+":"+tumorAFs.size());
+//					}
+//					tumorAFs.removeAll(tumorAFs);
+//				}
+//				if (!p.variantContext.getContig().equals(currentContig)) {
+//					currentContig=p.variantContext.getContig();
+//				    currentStart=p.variantContext.getStart();
+//				}
+//				else {
+//					currentStart=p.variantContext.getStart();					
+//				}
+//				float tumorAF=firstVCFFile.segmentVariants(p,snvCallerNum,indelCallerNum);
+//				if (tumorAF>0 && tumorAF<=1)
+//					   tumorAFs.add(tumorAF);
+//			}
+//			i++;
+//		}
+		
+		
 		i=0;
 		for (Variant p : mergedList) {
 			i++;
 			System.out.println("Writing:"+i);
-			if (i==45)
-				System.out.println("found!");
+//			if (i==3439)
+//				System.out.println("found!");
 			firstVCFFile.writeVariants(bw,p,snvCallerNum,indelCallerNum);
+//			firstVCFFile.writeVariants(bw,p,snvCallerNum,indelCallerNum,medianAFs);
 		}
 		bw.close();
-		
+		System.out.println("Done!");
 	}
 	
 	private  static  void initCallers() {

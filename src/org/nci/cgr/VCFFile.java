@@ -63,8 +63,8 @@ public class VCFFile {
 
 
 	public void writeVariants(BufferedWriter bw,Variant vv, int snvCallerNum,int indelCallerNum) throws IOException, ClassNotFoundException {
-		if (vv.getVariantContext().getStart()==6263642)
-			System.out.println("found!");
+//		if (vv.getVariantContext().getStart()==6263642)
+//			System.out.println("found!");
 		
 		Variant variant=new Variant(vv.getVariantContext(),vv.getCaller(),vv.getPriority(),vv.getSet());
 		// variant.g
@@ -280,6 +280,216 @@ public class VCFFile {
 		bw.flush();
 	}
 	
+	
+	public float segmentVariants(Variant vv, int snvCallerNum,int indelCallerNum) throws IOException, ClassNotFoundException {
+//		if (vv.getVariantContext().getStart()==6263642)
+//			System.out.println("found!");
+		
+		Variant variant=new Variant(vv.getVariantContext(),vv.getCaller(),vv.getPriority(),vv.getSet());
+		// variant.g
+		
+//		bw.append(vv.getVariantContext().getContig()+"\t"+vv.getVariantContext().getStart()+"\t"+vv.getVariantContext().getID()+"\t"+
+//	              vv.getVariantContext().getAlleles().get(0).getBaseString()+"\t");
+//		
+//		if (vv.getVariantContext().getAlleles().size()>1)
+//			bw.append(vv.getVariantContext().getAlleles().get(1).getBaseString()+"\t");
+//		else
+//			bw.append(vv.getVariantContext().getAlleles().get(0).getBaseString()+"\t");
+		
+		Map<String,Object> info=vv.getVariantContext().getAttributes();
+		String infoContent="";
+		String format="";
+		String gtString="";
+		//vcfEncoder.write(bw, vv.getVariantContext());
+		if (vv.getVariantContext().hasGenotypes()) {
+		   Set<String> sampleNames=vv.getVariantContext().getSampleNames();
+		   if ((sampleNames.size()!=2) && (sampleNames.size()!=0)) {
+			   System.err.println("Error: the samples in "+filePath+" not equals to 2 or 0! The variants in this file will be skipped!");
+               return -1;
+		   }
+		   if (sampleNames.size()==2) {
+			   String[] samples=new String[2];
+			   boolean foundTumor=false;
+			   for(String sampleName:sampleNames) 
+				   if (sampleName.toUpperCase().contains(TUMOR_TAG1)||sampleName.toUpperCase().contains(TUMOR_TAG2)) {
+					  samples[0]=sampleName;
+					  foundTumor=true;  
+				   }
+				   else
+					  samples[1]=sampleName;
+			   if (!foundTumor) {
+				   System.err.println("Error: the samples in "+filePath+" does not contain TUMOR in the genotype columns! The variants in this file will be skipped!");
+	               return -1; 
+			   }
+			   Set<String> extendedGtKeyset=new TreeSet<String>();
+			   for(int i=0;i<samples.length;i++) {
+				   Genotype gt=vv.getVariantContext().getGenotype(samples[i]);
+				   Map<String,Object> extendedAttributes=gt.getExtendedAttributes();
+				   for (String key:extendedAttributes.keySet()) {
+					   extendedGtKeyset.add(key);
+				   }
+			   }
+			   for(int i=0;i<samples.length;i++) {
+				   Genotype gt=vv.getVariantContext().getGenotype(samples[i]);
+//				   if (genoTypes[Integer.parseInt(results[j])].compareTo("0")==0)
+//	    				allGenotypes=allGenotypes+"."+"|";
+//	    		    if (genoTypes[Integer.parseInt(results[j])].compareTo("1")==0)
+//   				    allGenotypes=allGenotypes+"0/0"+":"+ altDepths[Integer.parseInt(results[j])]+":"+depths[Integer.parseInt(results[j])]
+//		    					+":"+quals[Integer.parseInt(results[j])]+":"+pls[Integer.parseInt(results[j])]+"\t";
+//	    			if ((genoTypes[Integer.parseInt(results[j])].compareTo("2")==0) || (genoTypes[Integer.parseInt(results[j])].compareTo("3")==0) || (genoTypes[Integer.parseInt(results[j])].compareTo("4")==0))
+//	    			    allGenotypes=allGenotypes+gts[Integer.parseInt(results[j])]+":"+ altDepths[Integer.parseInt(results[j])]+":"+depths[Integer.parseInt(results[j])]
+//	    					+":"+quals[Integer.parseInt(results[j])]+":"+pls[Integer.parseInt(results[j])]+"\t";
+				   if (i==0) 
+					   if (gt.getAlleles().size()>0) format="GT";
+				   
+				  
+				   if (gt.isCalled()) {
+					   if (gt.isHom()){							
+							if (gt.isHomRef())
+								gtString+="0/0";  // 0/0
+							if (gt.isHomVar())
+								gtString+="1/1";  // 1/1
+						}
+						if (gt.isHet()){
+							if (gt.isHetNonRef())
+								gtString+="1/2";  // 1/2 e.g.
+							else
+								gtString+="0/1";;  // 0/1
+						}						
+					}
+						   
+		
+				   if (gt.hasDP()) {
+					   if (i==0) {
+						   if (format.length()==0)
+							   format="DP";
+						   else
+							   format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+"DP";
+					   }
+					   if (gt.getAlleles().size()==0)
+						   gtString=gtString+gt.getDP();
+					   else
+				           gtString=gtString+":"+gt.getDP();
+				   }
+			
+				   if (gt.hasAD()) {  
+					   gtString=gtString+":"+Arrays.toString(gt.getAD()).replace("[", "").replace("]", "").replace(" ","").trim();
+					   if (i==0) format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+"AD";   
+				   }
+				   Map<String,Object> extendedAttributes=gt.getExtendedAttributes() ;
+				   for (String key:extendedGtKeyset) {
+					   if (i==0) {
+						   if (vv.getCaller().contains(","))
+					          format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+key;
+						   else
+							  format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+SomaticCombiner.callerName(vv.getCaller())+"_"+key;
+					   }
+					   if (extendedAttributes.containsKey(key))
+					      gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+extendedAttributes.get(key).toString();
+					   else
+						   gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+".";
+				   }
+				   
+				   gtString=gtString+"\t";
+			   }   
+			}
+		}
+		else {
+			format="GT";
+			gtString="0/1\t0/0";
+		}
+		// List<String> keysSorted = info.keySet().stream().collect(Collectors.toList());
+		List<String> aList = info.keySet().stream().collect(Collectors.toList());
+		aList.sort(Comparator.naturalOrder());
+		for (String key:aList) {		
+			if (Integer.bitCount(vv.getSet())==1)
+				infoContent=infoContent+SomaticCombiner.callerName(vv.getCaller())+"_"+key+"="+info.get(key).toString().replace("[", "").replace("]", "")+VCFConstants.INFO_FIELD_SEPARATOR;
+			else
+		        infoContent=infoContent+key+"="+info.get(key).toString().replace("[", "").replace("]", "")+VCFConstants.INFO_FIELD_SEPARATOR;			
+		}
+//		bw.append(".\t");
+		String WESPass="ADJ_LowConf";
+		float tumorAF=0;
+		int tumorDP=0;
+		if (vv.getVariantContext().isSNP()) {
+			tumorAF=vv.getTumorAF();
+			tumorDP=vv.getTumorDP();
+			
+			// deep sequencing
+			// if (vv.getCaller().contains("strelka") && vv.getCaller().contains("lofreq") || vv.getCaller().contains("strelka") && vv.getCaller().contains("vardict")
+			//		  || vv.getCaller().contains("vardict") && vv.getCaller().contains("lofreq")) 
+			if ((float)Integer.bitCount(vv.getSet()) / snvCallerNum >= 0.5) 
+				return tumorAF;
+//				WESPass="ADJ_PASS";
+//		    if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") )
+//		    // if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && Integer.bitCount(vv.getSet())>=1 )
+//				WESPass="ADJ_PASS";
+//		    if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))
+////			// if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && Integer.bitCount(vv.getSet())>1)	
+//				WESPass="ADJ_PASS";
+			
+//			if (vv.getCaller().contains("strelka"))
+//					WESPass="WES_PASS";
+//			if (tumorAF<0.02)
+//				if (Integer.bitCount(vv.getSet())>0)
+//				    WESPass="WES_PASS";
+//		    if (tumorAF<0.03 && tumorAF>0) {			
+//				if (tumorDP>10) {
+//				   if (Integer.bitCount(vv.getSet())>1)
+//					  WESPass="WES_PASS";
+//			       if (vv.getTumorAF()<=0.01 )
+//				      if (Integer.bitCount(vv.getSet())>0)
+//					    WESPass="WES_PASS";
+//				}
+//			 }
+//			 else {
+//				 if (tumorAF>0.03) {
+//				  if (vv.getCaller().contains("strelka") && vv.getCaller().contains("lofreq") || vv.getCaller().contains("strelka") && vv.getCaller().contains("vardict")
+//						  || vv.getCaller().contains("vardict") && vv.getCaller().contains("lofreq"))
+//						WESPass="WES_PASS";
+//				  else
+//					  WESPass="WES_LowConf";
+//				 }
+//				 if (tumorAF<=0.1 && tumorAF>=0.03)
+//					if (Integer.bitCount(vv.getSet())>1 && (tumorDP>10))
+//						WESPass="WES_PASS";
+//			 }
+		}
+
+		return 2;
+		
+//		if (vv.getVariantContext().isSNP()) {
+//			if ((float)Integer.bitCount(vv.getSet()) / snvCallerNum >= 0.5)
+//				bw.append("PASS" + ";"+WESPass+"\t");
+//			else
+//				bw.append("LowConf" + ";"+WESPass+"\t");
+//		} else {
+//			if ((float)Integer.bitCount(vv.getSet()) / indelCallerNum >= 0.5)
+//				bw.append("PASS"  + ";"+WESPass+"\t");
+//			else
+//				bw.append("LowConf"  + ";"+WESPass+ "\t");
+//		}
+//						
+//		bw.append(infoContent);
+//		// if (vv.getVariantContext().isSNP()) {
+//		if (tumorAF!=-1)
+//		    bw.append("Tumor_AF="+tumorAF+";");
+//		if (tumorDP>0)
+//			bw.append("Tumor_DP="+tumorDP+";");
+//			
+//		// }
+//		bw.append(SomaticCombiner.COUNT_TAG+"="+Integer.bitCount(vv.getSet())+VCFConstants.INFO_FIELD_SEPARATOR+SomaticCombiner.callerSymbols+"="+voting(vv));
+//		
+//		bw.append("\t"+format);
+//		if (gtString.endsWith("\t")) {
+//			gtString = gtString.substring(0, gtString.length()-1);
+//		}
+//		bw.append("\t"+gtString);
+//		
+//		
+//		bw.newLine();
+//		bw.flush();
+	}
 	private static void rejectVCFV43Headers(final VCFHeader targetHeader) {
         if (targetHeader.getVCFHeaderVersion() != null && targetHeader.getVCFHeaderVersion().isAtLeastAsRecentAs(VCFHeaderVersion.VCF4_3)) {
             throw new IllegalArgumentException(String.format("Writing VCF version %s is not implemented", targetHeader.getVCFHeaderVersion()));
@@ -615,6 +825,237 @@ public class VCFFile {
 		return(voting);	
 	
 		
+	}
+	
+	
+	public void writeVariants(BufferedWriter bw,Variant vv, int snvCallerNum,int indelCallerNum,ArrayList<String> medianAFs) throws IOException, ClassNotFoundException {
+//		if (vv.getVariantContext().getStart()==6263642)
+//			System.out.println("found!");
+		
+		Variant variant=new Variant(vv.getVariantContext(),vv.getCaller(),vv.getPriority(),vv.getSet());
+		// variant.g
+		bw.append(vv.getVariantContext().getContig()+"\t"+vv.getVariantContext().getStart()+"\t"+vv.getVariantContext().getID()+"\t"+
+	              vv.getVariantContext().getAlleles().get(0).getBaseString()+"\t");
+		
+		if (vv.getVariantContext().getAlleles().size()>1)
+			bw.append(vv.getVariantContext().getAlleles().get(1).getBaseString()+"\t");
+		else
+			bw.append(vv.getVariantContext().getAlleles().get(0).getBaseString()+"\t");
+		
+		Map<String,Object> info=vv.getVariantContext().getAttributes();
+		String infoContent="";
+		String format="";
+		String gtString="";
+		//vcfEncoder.write(bw, vv.getVariantContext());
+		if (vv.getVariantContext().hasGenotypes()) {
+		   Set<String> sampleNames=vv.getVariantContext().getSampleNames();
+		   if ((sampleNames.size()!=2) && (sampleNames.size()!=0)) {
+			   System.err.println("Error: the samples in "+filePath+" not equals to 2 or 0! The variants in this file will be skipped!");
+               return;
+		   }
+		   if (sampleNames.size()==2) {
+			   String[] samples=new String[2];
+			   boolean foundTumor=false;
+			   for(String sampleName:sampleNames) 
+				   if (sampleName.toUpperCase().contains(TUMOR_TAG1)||sampleName.toUpperCase().contains(TUMOR_TAG2)) {
+					  samples[0]=sampleName;
+					  foundTumor=true;  
+				   }
+				   else
+					  samples[1]=sampleName;
+			   if (!foundTumor) {
+				   System.err.println("Error: the samples in "+filePath+" does not contain TUMOR in the genotype columns! The variants in this file will be skipped!");
+	               return; 
+			   }
+			   Set<String> extendedGtKeyset=new TreeSet<String>();
+			   for(int i=0;i<samples.length;i++) {
+				   Genotype gt=vv.getVariantContext().getGenotype(samples[i]);
+				   Map<String,Object> extendedAttributes=gt.getExtendedAttributes();
+				   for (String key:extendedAttributes.keySet()) {
+					   extendedGtKeyset.add(key);
+				   }
+			   }
+			   for(int i=0;i<samples.length;i++) {
+				   Genotype gt=vv.getVariantContext().getGenotype(samples[i]);
+//				   if (genoTypes[Integer.parseInt(results[j])].compareTo("0")==0)
+//	    				allGenotypes=allGenotypes+"."+"|";
+//	    		    if (genoTypes[Integer.parseInt(results[j])].compareTo("1")==0)
+//   				    allGenotypes=allGenotypes+"0/0"+":"+ altDepths[Integer.parseInt(results[j])]+":"+depths[Integer.parseInt(results[j])]
+//		    					+":"+quals[Integer.parseInt(results[j])]+":"+pls[Integer.parseInt(results[j])]+"\t";
+//	    			if ((genoTypes[Integer.parseInt(results[j])].compareTo("2")==0) || (genoTypes[Integer.parseInt(results[j])].compareTo("3")==0) || (genoTypes[Integer.parseInt(results[j])].compareTo("4")==0))
+//	    			    allGenotypes=allGenotypes+gts[Integer.parseInt(results[j])]+":"+ altDepths[Integer.parseInt(results[j])]+":"+depths[Integer.parseInt(results[j])]
+//	    					+":"+quals[Integer.parseInt(results[j])]+":"+pls[Integer.parseInt(results[j])]+"\t";
+				   if (i==0) 
+					   if (gt.getAlleles().size()>0) format="GT";
+				   
+				  
+				   if (gt.isCalled()) {
+					   if (gt.isHom()){							
+							if (gt.isHomRef())
+								gtString+="0/0";  // 0/0
+							if (gt.isHomVar())
+								gtString+="1/1";  // 1/1
+						}
+						if (gt.isHet()){
+							if (gt.isHetNonRef())
+								gtString+="1/2";  // 1/2 e.g.
+							else
+								gtString+="0/1";;  // 0/1
+						}						
+					}
+						   
+		
+				   if (gt.hasDP()) {
+					   if (i==0) {
+						   if (format.length()==0)
+							   format="DP";
+						   else
+							   format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+"DP";
+					   }
+					   if (gt.getAlleles().size()==0)
+						   gtString=gtString+gt.getDP();
+					   else
+				           gtString=gtString+":"+gt.getDP();
+				   }
+			
+				   if (gt.hasAD()) {  
+					   gtString=gtString+":"+Arrays.toString(gt.getAD()).replace("[", "").replace("]", "").replace(" ","").trim();
+					   if (i==0) format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+"AD";   
+				   }
+				   Map<String,Object> extendedAttributes=gt.getExtendedAttributes() ;
+				   for (String key:extendedGtKeyset) {
+					   if (i==0) {
+						   if (vv.getCaller().contains(","))
+					          format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+key;
+						   else
+							  format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+SomaticCombiner.callerName(vv.getCaller())+"_"+key;
+					   }
+					   if (extendedAttributes.containsKey(key))
+					      gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+extendedAttributes.get(key).toString();
+					   else
+						   gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+".";
+				   }
+				   
+				   gtString=gtString+"\t";
+			   }   
+			}
+		}
+		else {
+			format="GT";
+			gtString="0/1\t0/0";
+		}
+		// List<String> keysSorted = info.keySet().stream().collect(Collectors.toList());
+		List<String> aList = info.keySet().stream().collect(Collectors.toList());
+		aList.sort(Comparator.naturalOrder());
+		for (String key:aList) {		
+			if (Integer.bitCount(vv.getSet())==1)
+				infoContent=infoContent+SomaticCombiner.callerName(vv.getCaller())+"_"+key+"="+info.get(key).toString().replace("[", "").replace("]", "")+VCFConstants.INFO_FIELD_SEPARATOR;
+			else
+		        infoContent=infoContent+key+"="+info.get(key).toString().replace("[", "").replace("]", "")+VCFConstants.INFO_FIELD_SEPARATOR;			
+		}
+		bw.append(".\t");
+		String WESPass="ADJ_LowConf";
+		float tumorAF=0;
+		int tumorDP=0;
+		if (vv.getVariantContext().isSNP()) {
+			tumorAF=vv.getTumorAF();
+			tumorDP=vv.getTumorDP();
+			
+			
+			if ((float)Integer.bitCount(vv.getSet()) / snvCallerNum >= 0.5) 
+				WESPass="ADJ_PASS";
+			// deep sequencing
+			// if (vv.getCaller().contains("strelka") && vv.getCaller().contains("lofreq") || vv.getCaller().contains("strelka") && vv.getCaller().contains("vardict")
+			//		  || vv.getCaller().contains("vardict") && vv.getCaller().contains("lofreq"))
+			else {
+				Iterator<String> iter=medianAFs.iterator();
+				Boolean found=false;
+				while (iter.hasNext()) {
+					String aa[]=iter.next().split(":");
+					if (vv.getVariantContext().getContig().equals(aa[0]) && vv.getVariantContext().getStart()>Integer.parseInt(aa[1]) && vv.getVariantContext().getStart()<=Integer.parseInt(aa[1])+500) {
+						found=true;
+						break;
+					}				
+				}
+				if (found) {			
+				    if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") )
+						WESPass="ADJ_PASS";
+				    if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))	
+						WESPass="ADJ_PASS";
+				}
+			}
+
+//			if (vv.getCaller().contains("strelka"))
+//					WESPass="WES_PASS";
+//			if (tumorAF<0.02)
+//				if (Integer.bitCount(vv.getSet())>0)
+//				    WESPass="WES_PASS";
+//		    if (tumorAF<0.03 && tumorAF>0) {			
+//				if (tumorDP>10) {
+//				   if (Integer.bitCount(vv.getSet())>1)
+//					  WESPass="WES_PASS";
+//			       if (vv.getTumorAF()<=0.01 )
+//				      if (Integer.bitCount(vv.getSet())>0)
+//					    WESPass="WES_PASS";
+//				}
+//			 }
+//			 else {
+//				 if (tumorAF>0.03) {
+//				  if (vv.getCaller().contains("strelka") && vv.getCaller().contains("lofreq") || vv.getCaller().contains("strelka") && vv.getCaller().contains("vardict")
+//						  || vv.getCaller().contains("vardict") && vv.getCaller().contains("lofreq"))
+//						WESPass="WES_PASS";
+//				  else
+//					  WESPass="WES_LowConf";
+//				 }
+//				 if (tumorAF<=0.1 && tumorAF>=0.03)
+//					if (Integer.bitCount(vv.getSet())>1 && (tumorDP>10))
+//						WESPass="WES_PASS";
+//			 }
+		}
+		else {
+			tumorAF=vv.getTumorAF();
+			tumorDP=vv.getTumorDP();
+			if ((float)Integer.bitCount(vv.getSet()) / indelCallerNum >= 0.5)
+				WESPass="ADJ_PASS";
+		   // if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && vv.getCaller().contains("mutect2") )
+			// if (tumorAF<0.03 && tumorAF>0 && tumorDP>10 && Integer.bitCount(vv.getSet())>=1 )
+			//	WESPass="WES_PASS";
+			//if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && vv.getCaller().contains("mutect2") && vv.getCaller().contains("strelka"))
+			// if (tumorAF<=0.1 && tumorAF>=0.03 && tumorDP>10 && Integer.bitCount(vv.getSet())>1)	
+				//	WESPass="WES_PASS";
+		}
+		
+		if (vv.getVariantContext().isSNP()) {
+			if ((float)Integer.bitCount(vv.getSet()) / snvCallerNum >= 0.5)
+				bw.append("PASS" + ";"+WESPass+"\t");
+			else
+				bw.append("LowConf" + ";"+WESPass+"\t");
+		} else {
+			if ((float)Integer.bitCount(vv.getSet()) / indelCallerNum >= 0.5)
+				bw.append("PASS"  + ";"+WESPass+"\t");
+			else
+				bw.append("LowConf"  + ";"+WESPass+ "\t");
+		}
+						
+		bw.append(infoContent);
+		// if (vv.getVariantContext().isSNP()) {
+		if (tumorAF!=-1)
+		    bw.append("Tumor_AF="+tumorAF+";");
+		if (tumorDP>0)
+			bw.append("Tumor_DP="+tumorDP+";");
+			
+		// }
+		bw.append(SomaticCombiner.COUNT_TAG+"="+Integer.bitCount(vv.getSet())+VCFConstants.INFO_FIELD_SEPARATOR+SomaticCombiner.callerSymbols+"="+voting(vv));
+		
+		bw.append("\t"+format);
+		if (gtString.endsWith("\t")) {
+			gtString = gtString.substring(0, gtString.length()-1);
+		}
+		bw.append("\t"+gtString);
+		
+		
+		bw.newLine();
+		bw.flush();
 	}
 	
 }
