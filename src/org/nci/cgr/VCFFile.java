@@ -637,8 +637,8 @@ public class VCFFile {
 		final CloseableIterator<VariantContext> variantIterator = vcfFileReader.iterator();
 		while (variantIterator.hasNext()) {
 			final VariantContext vc = variantIterator.next();
-//			if (vc.getStart()==44985825)
-//				System.out.println("found!");
+			if (vc.getStart()==1286671)
+				System.out.println("found!");
 			System.out.println(caller+" "+vc.getContig()+":"+vc.getStart());
 			// Set<String> filters=vc.getFilters();
 			
@@ -674,7 +674,7 @@ public class VCFFile {
 					list.add(variant);
 				}
 				else {
-					//Muse split allele and genotypes
+					//Muse or MuTect2 split allele and genotypes
 					List<Allele> alleles = vc.getAlleles();
 					
 					int alleleCount=alleles.size();
@@ -687,7 +687,7 @@ public class VCFFile {
 					//  tmpAlleles=tmpVC.getAlleles();
 					  List<Genotype> tmpGenotypes=new ArrayList<Genotype>(tmpVC.getGenotypes());
 					 
-					  for (int j=1;j<alleleCount;j++) 
+					  for (int j=alleleCount-1;j>0;j--) 
 						 if ((j!=i) && (j!=0)) 
 					       tmpAlleles.remove(j);
 					  for (int j=0;j<tmpAlleles.size();j++) 
@@ -697,6 +697,7 @@ public class VCFFile {
 					  for (Genotype gt:tmpGenotypes) {
 						  if (gt.hasAD()) {
 							  GenotypeBuilder splitGenotypeBuilder=new GenotypeBuilder();
+							  
 							  int[] ADs=gt.getAD();
 							  int[] newADs=new int[2];
 							  for (int j=0,k=0;j<alleleCount;j++) 
@@ -708,7 +709,7 @@ public class VCFFile {
 							 // int alleleSize=tmpGtAlleles.size();
 							  
 							  // ArrayList<Integer> delIndices = new ArrayList<Integer>();
-							  for (int j=0;j<tmpGtAlleles.size();j++) {
+							  for (int j=tmpGtAlleles.size()-1;j>=0;j--) {
 								  boolean found=false;
 								  for (int k=0;k<tmpAlleles.size();k++) {
 									  if (tmpGtAlleles.get(j).equals(tmpAlleles.get(k))) {
@@ -719,12 +720,12 @@ public class VCFFile {
 								  if (!found) {
 								//	  delIndices.add(j);
 									  tmpGtAlleles.remove(j); 
-									  break;
+								//	  break;
 								  }  
 							  }
 							  
 							  // following is to handle 2/2 situation
-							  for (int j=0;j<tmpGtAlleles.size();j++) {
+							  for (int j=tmpGtAlleles.size()-1;j>=0;j--) {
 								  boolean found=false;
 								  for (int k=0;k<tmpAlleles.size();k++) {
 									  if (tmpGtAlleles.get(j).equals(tmpAlleles.get(k))) {
@@ -736,7 +737,7 @@ public class VCFFile {
 								//	  delIndices.add(j);
 									//  tmpGtAlleles.get(j).
 									  tmpGtAlleles.remove(j);
-									  break;
+									//  break;
 								  }  
 							  }
 							 
@@ -745,7 +746,7 @@ public class VCFFile {
 								  splitGenotypeBuilder.alleles(tmpGtAlleles);
 								  splitGenotypeBuilder.AD(newADs);
 								  splitGenotypeBuilder.DP(0);
-								  
+								   
 							  }
 							  else {
 								  System.out.println(vc.getGenotype(0).getAlleles().size());
@@ -757,6 +758,7 @@ public class VCFFile {
 								  if (gt.hasDP()) splitGenotypeBuilder.DP(gt.getDP());	
 							  }
 							  Map<String,Object> gtExtendedAttributes=gt.getExtendedAttributes();
+							  Map<String,Object> gtTmpExtendedAttributes=new HashMap<String,Object>(gt.getExtendedAttributes());
 						      for(String key:gtExtendedAttributes.keySet()) {
 						    	  String cName=gtExtendedAttributes.get(key).getClass().getName();
 //								  System.out.print(cName);
@@ -767,9 +769,16 @@ public class VCFFile {
 												 if ((j!=i) && (j!=0)) 
 													 fieldsForKey.remove(j);																		
 								  }
+								  if (key.equals("AF")) {
+									  String AFs[]=gtExtendedAttributes.get(key).toString().split(",");
+									  for (int j=0;j<alleleCount-1;j++)
+										  if (j+1==i)
+											  gtTmpExtendedAttributes.replace(key,AFs[j]);
+									  
+								  }
 						      }
 						      splitGenotypeBuilder.name(gt.getSampleName());
-						      splitGenotypeBuilder.attributes(gtExtendedAttributes);
+						      splitGenotypeBuilder.attributes(gtTmpExtendedAttributes);
 						      splitGenotypes.add(splitGenotypeBuilder.make());
 							  
 						  }
