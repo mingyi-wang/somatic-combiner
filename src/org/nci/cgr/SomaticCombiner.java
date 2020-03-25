@@ -181,7 +181,7 @@ public class SomaticCombiner {
 		i=0;
 		for (Variant p : mergedList) {
 			i++;
-			if (i%1000==0)
+			if (i%10000==0)
 		    	logger.log(Level.INFO,"Finished writing "+i);
 			firstVCFFile.writeVariants(bw,p,snvCallerNum,indelCallerNum);
 		}
