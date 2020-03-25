@@ -25,6 +25,7 @@ import java.util.logging.StreamHandler;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -60,6 +61,7 @@ public class SomaticCombiner {
 			options.addOption(caller.getSymbol(),caller.getName(),true,caller.getDescription());
 		
 		options.addOption("o","output",true,"Output VCF file");
+		options.addOption("h","help",false,"print this message");
 		String outputFilePath=null;
 		
 
@@ -74,6 +76,11 @@ public class SomaticCombiner {
             System.exit(1);
         }
 		int count=0;
+		if (line.hasOption("h")) {
+			HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp( "somaticCombiner", options );
+			System.exit(1);	
+		}
 		for (Caller caller:callerList) {
 			if (line.hasOption(caller.getSymbol())) {
 				caller.setFilePath(line.getOptionValue(caller.getSymbol()));
@@ -88,7 +95,12 @@ public class SomaticCombiner {
 			}
 		}
 		if (count<2) {
-			logger.log(Level.SEVERE,"Error: Only one VCF is available. No merge needed!");
+			if (count==1)
+			    logger.log(Level.SEVERE,"Error: Only one VCF is available. No merge needed!");
+			else {
+				HelpFormatter formatter = new HelpFormatter();
+				formatter.printHelp( "somaticCombiner", options );
+			}
 			System.exit(1);
 		}
 		outputFilePath=line.getOptionValue("o");
