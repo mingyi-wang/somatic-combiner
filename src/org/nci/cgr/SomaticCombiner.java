@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -47,6 +49,7 @@ public class SomaticCombiner {
 	public static String callerSymbols="";
 	public static String callerNames="";
 	public static Logger logger = Logger.getLogger(SomaticCombiner.class.getName());
+	public static String version="V1.02";
 	public static ArrayList<String> medianAFs=new ArrayList<String>();
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 		InputStream is=SomaticCombiner.class.getClassLoader().getResourceAsStream("mylogging.properties");
@@ -78,7 +81,7 @@ public class SomaticCombiner {
 		int count=0;
 		if (line.hasOption("h")) {
 			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp( "somaticCombiner", options );
+			formatter.printHelp( "somaticCombiner "+version, options );
 			System.exit(1);	
 		}
 		for (Caller caller:callerList) {
@@ -99,7 +102,7 @@ public class SomaticCombiner {
 			    logger.log(Level.SEVERE,"Error: Only one VCF is available. No merge needed!");
 			else {
 				HelpFormatter formatter = new HelpFormatter();
-				formatter.printHelp( "somaticCombiner", options );
+				formatter.printHelp( "somaticCombiner "+version, options );
 			}
 			System.exit(1);
 		}
@@ -108,6 +111,12 @@ public class SomaticCombiner {
 		int snvCallerNum=0;
 		int indelCallerNum=0;
 		List<Variant> list =new ArrayList<Variant>();
+		System.out.println("somaticCombiner "+version);
+		Option[] allOptions=line.getOptions();
+		for (Option o:allOptions) {
+			System.out.print("-"+o.getOpt()+" "+o.getValue()+" ");
+		}
+		System.out.println();
 		logger.log(Level.INFO,"Loading VCFs...");
 		for (Caller caller:callerList) {
 			if (caller.getFilePath()!=null) {
