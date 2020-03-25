@@ -2,9 +2,11 @@ package org.nci.cgr;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -14,6 +16,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -38,51 +45,14 @@ public class SomaticCombiner {
 	public final static String COUNT_TAG="NumCallers";
 	public static String callerSymbols="";
 	public static String callerNames="";
+	public static Logger logger = Logger.getLogger(SomaticCombiner.class.getName());
 	public static ArrayList<String> medianAFs=new ArrayList<String>();
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
-		// TODO Auto-generated method stub
-		// TODO Auto-generated method stub
-		// Parameter examples:
-		// --lofreq-snv
-		// --lofreq-indel T:\DCEG\Projects\Exome\builds\2014-12-17\Ensemble_New_Annotation\variants\variants_annotated_new.vcf T:\DCEG\Home\wangm6\Bin\variant_annotation_scripts\tmp.txt
-		// --vardict
-		// --strelka-snv
-		// --strelka-indel
-		// --muse
-		// --mutect
-		// --mutect2
-		// -o 
-		//
-		
-		// augument list:
-		// -v T:\DCEG\CGF\Bioinformatics\Production\Mingyi\Vardict\dream_set4_fixed_vt_sorted_psssed.vcf 
-		// -l T:\DCEG\Projects\Exome\builds\build_Dream\Results\Lofreq\Lofreq_set4_WGS_somatic_final_minus-dbsnp.snvs.vcf.gz 
-		// -L T:\DCEG\Projects\Exome\builds\build_Dream\Results\Lofreq\Lofreq_set4_WGS_somatic_final_minus-dbsnp.indels_vt_sorted.vcf.gz 
-		// -u T:\DCEG\Projects\Exome\builds\build_Dream\Results\Muse\set4.vcf.gz 
-		// -M T:\DCEG\Projects\Exome\builds\build_Dream\Results\Mutect2\merged_set4_all_raw_fixed_sorted_vt_sorted.vcf.gz 
-		// -m T:\DCEG\Projects\Exome\builds\build_Dream\Results\Mutect\merged_set4_all.vcf 
-		// -s T:\DCEG\Projects\Exome\builds\build_Dream\Results\Strelka\set4\results\variants\somatic.snvs.vcf 
-		// -S T:\DCEG\Projects\Exome\builds\build_Dream\Results\Strelka\set4\results\variants\somatic.indels_vt_sorted.vcf.gz -o T:\DCEG\Home\wangm6\tmp2\merged.vcf
-		
-		// Parameter:
-		// -l T:\\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter2_downsample\Lofreq\Lofreq_NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_WES_somatic_final.snvs.vcf.gz 
-		// -L T:\\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter2_downsample\Lofreq\Lofreq_NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_WES_somatic_final.indels.vcf.gz 
-		// -u T:\\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter2_downsample\Muse\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_passed.vcf.gz 
-		// -M T:\\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter2_downsample\Sentieon\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_WES_vt_sorted.vcf.gz 
-		// -s T:\\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter2_downsample\Strelka\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40\results\variants\somatic.snvs.vcf.gz 
-		// -S T:\\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter2_downsample\Strelka\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40\results\variants\somatic.indels_vt_sorted.vcf.gz 
-		// -o T:\\DCEG\Home\wangm6\tmp2\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_4callers_voting.vcf
-		
-		
-		// -l T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_production_downsample\Lofreq\Lofreq_NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_WES_somatic_final.snvs.vcf.gz -L T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_production_downsample\Lofreq\Lofreq_NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_WES_somatic_final.indels.vcf.gz -u T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_production_downsample\Muse\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_passed.vcf.gz -M T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_production_downsample\Sentieon\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_WES_vt_sorted_fixed.vcf -s T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_production_downsample\Strelka\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40\results\variants\somatic.snvs.vcf.gz -S T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_production_downsample\Strelka\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40\results\variants\somatic.indels_vt_sorted.vcf.gz -o T:\DCEG\Home\wangm6\tmp2\NA24385_tumor10PNA12878-1_1000_vs_NA24385_germline1_40_4callers_voting.vcf
-		// -l T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_normal_pipeline\Lofreq\Lofreq_CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1_WES_somatic_final.snvs.vcf.gz -L T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_normal_pipeline\Lofreq\Lofreq_CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1_WES_somatic_final.indels.vcf.gz -u T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_normal_pipeline\Muse\CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1_passed.vcf.gz -M T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_normal_pipeline\Sentieon\CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1_WES_vt_sorted_fixed.vcf -s T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_normal_pipeline\Strelka\CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1\results\variants\somatic.snvs.vcf.gz -S T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_normal_pipeline\Strelka\CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1\results\variants\somatic.indels_vt_sorted.vcf.gz -o T:\DCEG\Home\wangm6\tmp2\CTRL_NA24385_tumor50PNA12878-1_vs_CTRL_NA24385_germline1_4callers_voting.vcf
-		// -l T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Lofreq\Lofreq_NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_WES_somatic_final.snvs.vcf.gz -L T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Lofreq\Lofreq_NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_WES_somatic_final.indels.vcf.gz -u T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Muse\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_passed.vcf.gz -M T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Sentieon\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_WES_vt_sorted_fixed.vcf -s T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Strelka\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40\results\variants\somatic.snvs.vcf.gz -S T:\DCEG\Projects\Exome\builds\build_UMI_NP0084_22047\Results_filter1_downsample\Strelka\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40\results\variants\somatic.indels_vt_sorted.vcf.gz -o T:\DCEG\Home\wangm6\tmp2\NA24385_tumor2PNA12878-1_100_vs_NA24385_germline1_40_4callers_voting.vcf
-		
-		// -l T:\\Projects\Exome\builds\build_Dream\Results\Lofreq\Lofreq_set1_WGS_somatic_final_minus-dbsnp.snvs.vcf.gz -L T:\\Projects\Exome\builds\build_Dream\Results\Lofreq\Lofreq_set1_WGS_somatic_final_minus-dbsnp.indels_vt_sorted.vcf -M T:\\Projects\Exome\builds\build_Dream\Results\Mutect2\merged_set1_all_raw_fixed_sorted_vt_sorted.vcf -s T:\\Projects\Exome\builds\build_Dream\Results\Strelka\set1\results\variants\somatic.snvs.vcf.gz -S T:\\Projects\Exome\builds\build_Dream\Results\Strelka\set1\results\variants\somatic.indels_vt_sorted.vcf.gz -u T:\\Projects\Exome\builds\build_Dream\Results\Muse\set1.vcf -o T:\\Projects\Exome\builds\build_Dream\Results\Ensemble\set1_4callers_voting_ourown.vcf
-		
-		// -l T:\DCEG\Projects\Exome\builds\build_Dream\Results\Lofreq\Lofreq_COLO_WGS_somatic_final_minus-dbsnp.snvs.vcf -L T:\DCEG\Projects\Exome\builds\build_Dream\Results\Lofreq\Lofreq_COLO_WGS_somatic_final_minus-dbsnp.indels_vt_sorted.vcf -M T:\DCEG\Projects\Exome\builds\build_Dream\Results\Mutect2\merged_COLO_all_raw_fixed_sorted_vt_sorted.vcf -s T:\DCEG\Projects\Exome\builds\build_Dream\Results\Strelka\COLO\results\variants\somatic.snvs.vcf.gz -S T:\DCEG\Projects\Exome\builds\build_Dream\Results\Strelka\COLO\results\variants\somatic.indels_vt_sorted.vcf.gz -u T:\DCEG\Projects\Exome\builds\build_Dream\Results\Muse\COLO.vcf -o T:\DCEG\Projects\Exome\builds\build_Dream\Results\Ensemble\COLO_4callers_voting_ourown.vcf
-		
-		// -l T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Lofreq\Lofreq_2_80_20_WES_somatic_final.snvs.vcf.gz -L T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Lofreq\Lofreq_2_80_20_WES_somatic_final.indels.vcf.gz -M T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Sentieon\2_80_20_WES_vt_sorted.vcf.gz -s T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Strelka\2_80_20\results\variants\somatic.snvs.vcf.gz -S T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Strelka\2_80_20\results\variants\somatic.indels_vt_sorted.vcf.gz -v T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Vardict_0919\Vardict_merged_2_80_20_final_vt_sorted.vcf.gz -o T:\DCEG\Projects\Exome\builds\build_precisionFDA_test\Results_normal_pipeline\Ensemble\2_80_20_4callers_voting.vcf
+		InputStream is=SomaticCombiner.class.getClassLoader().getResourceAsStream("mylogging.properties");
+		LogManager.getLogManager().readConfiguration(is);
+		logger.setLevel(Level.FINE);
+        // logger.addHandler(new ConsoleHandler());
+        // logger.addHandler(new StreamHandler(System.out,new MyFormatter()));
 		initCallers();
 		CommandLineParser parser=new DefaultParser();
 		Options options=new Options();
@@ -98,7 +68,7 @@ public class SomaticCombiner {
 			line=parser.parse(options, args);
 		}
 		catch (ParseException e) {
-            System.out.println(e.getMessage());
+			logger.log(Level.SEVERE, e.getMessage());
             //formatter.printHelp("utility-name", options);
 
             System.exit(1);
@@ -111,13 +81,14 @@ public class SomaticCombiner {
 				if (tmpFile.exists()) 
 					count++;
 				else {
-					System.out.println("Error:"+caller.getFilePath()+" does not existed! Please check for that! The program will skip this VCF file!");
+					// System.out.println("Error:"+caller.getFilePath()+" does not existed! Please check for that! The program will skip this VCF file!");
+					logger.log(Level.SEVERE, "Error:"+caller.getFilePath()+" does not existed! Please check for that! The program will skip this VCF file!");
 					System.exit(1);
 				}				
 			}
 		}
 		if (count<2) {
-			System.out.println("Error: Only one VCF is available. No merge needed!");
+			logger.log(Level.SEVERE,"Error: Only one VCF is available. No merge needed!");
 			System.exit(1);
 		}
 		outputFilePath=line.getOptionValue("o");
@@ -125,14 +96,17 @@ public class SomaticCombiner {
 		int snvCallerNum=0;
 		int indelCallerNum=0;
 		List<Variant> list =new ArrayList<Variant>();
-		System.out.println("Starting loading ...");
+		logger.log(Level.INFO,"Loading VCFs...");
 		for (Caller caller:callerList) {
 			if (caller.getFilePath()!=null) {
 				VCFFile vcfFile=new VCFFile(caller.getFilePath(),caller.getName(),caller.getPriority(),caller.getSet());
+				logger.log(Level.INFO,"Loading "+caller.getName()+" "+caller.getFilePath()+" ...");
 //				if (caller.getName().contains("strelka-indel")) {
 //					System.out.println("Found!");
 //				}
-			    if(vcfFile.importVariants(list)>0) {
+				int cnt=vcfFile.importVariants(list);
+			    if(cnt>0) {
+			    	logger.log(Level.INFO,"Finished loading "+caller.getName()+" from "+caller.getFilePath()+". Total count:"+cnt+".");
 			    	caller.setVcfFile(vcfFile);
 			    	callerSymbols+=caller.getSymbol();
 			    	callerNames+=caller.getName()+",";
@@ -147,20 +121,25 @@ public class SomaticCombiner {
 				    	else
 				    		indelCallerNum++;
 			    }
+			    else 
+			    	logger.log(Level.SEVERE,"Warning: Loading "+caller.getName()+" "+caller.getFilePath()+" is failed!");
+			    	
+			    
 			    
 			}
 		}
 		if (callerSymbols.length()<=1) {
-			System.out.println("Caller number is less than 2. Exit!");
+			logger.log(Level.SEVERE,"Caller number is less than 2. Exit!");
             System.exit(1);
 		}
 		callerNames=callerNames.substring(0, callerNames.length()-1);
 		List<MergedVariant> mergedList=new ArrayList<MergedVariant>();
-		System.out.println("Starting merging...");
+		logger.log(Level.INFO,"Starting merging...");
 		long i=0;
 		for (Variant p : list) {
 			i++;
-			System.out.println(i);
+			if (i%10000==0)
+			  logger.log(Level.INFO,"Processed: "+i);
 //			if (p.getVariantContext().getStart()==6263642)
 //				System.out.println(p.getVariantContext().getContig()+"\t"+p.getVariantContext().getStart());
 			MergedVariant mp=new MergedVariant(p.getVariantContext(), p.getCaller(),p.getPriority(),p.getSet());
@@ -177,86 +156,26 @@ public class SomaticCombiner {
 				mergedList.add(mp);
 			}
 		}
-		System.out.println("Sorting merged variants ...");
+		logger.log(Level.INFO,"Finished merging VCFs. Processed: "+i+" in total.");
+		logger.log(Level.INFO,"Sorting merged variants ...");
 		Collections.sort(mergedList,Variant.VariantComparator);
-		System.out.println("Writing VCF ...");
-		
-//		File fw=new File(outputFilePath);
-//		OutputStream bw=new FileOutputStream(fw);
-//		VCFWriter vcfWriter=new VCFWriter(fw, bw, null,true,false,true,false);
-//        i=0;
-//   		for (Variant p : mergedList) {
-//    			i++;
-//    			System.out.println("Writing:"+i);
-//    			vcfWriter.add(p.getVariantContext());
-//   		}     
-//		vcfWriter.close();
+		logger.log(Level.INFO,"Writing VCF ...");
+
 		
 		BufferedWriter bw=new BufferedWriter(new FileWriter(new File(outputFilePath)));
 		VCFFile firstVCFFile=prepareHeader();	
 		VCFFile.writeHeader(firstVCFFile.getmHeader(), bw);
-		
-//		System.out.println("Calculating Median AF for each fragment ...");
-//		String currentContig="";
-//		int currentStart=0;
-//		i=0;
-//		ArrayList<Float> tumorAFs=new ArrayList<Float>();
-//		for (Variant p : mergedList) {
-//			if (i==0) {
-//				currentContig=p.variantContext.getContig();
-//			    currentStart=p.variantContext.getStart();
-//			}
-//
-//
-//			if ((p.variantContext.getContig()==currentContig)&&(p.variantContext.getStart()<=currentStart+500)){
-//			
-//
-//			   float tumorAF=firstVCFFile.segmentVariants(p,snvCallerNum,indelCallerNum);
-//			   if (tumorAF>0 && tumorAF<=1)
-//				   tumorAFs.add(tumorAF);
-//			}
-//			else {
-//				if (tumorAFs.size()>0) {
-//					Collections.sort(tumorAFs);
-//					float median;
-//					if(tumorAFs.size()%2==0) {
-//				      float sumOfMiddleElements= tumorAFs.get(tumorAFs.size()/2)+tumorAFs.get(tumorAFs.size()/2-1);
-//				      median=((float)sumOfMiddleElements/2);
-//					}
-//					else
-//						median=(float)tumorAFs.get(tumorAFs.size()/2);
-//					if (median<=0.1) {
-//						medianAFs.add(currentContig+":"+currentStart+":"+median+":"+tumorAFs.size());
-//						System.out.println(currentContig+":"+currentStart+":"+median+":"+tumorAFs.size());
-//					}
-//					tumorAFs.removeAll(tumorAFs);
-//				}
-//				if (!p.variantContext.getContig().equals(currentContig)) {
-//					currentContig=p.variantContext.getContig();
-//				    currentStart=p.variantContext.getStart();
-//				}
-//				else {
-//					currentStart=p.variantContext.getStart();					
-//				}
-//				float tumorAF=firstVCFFile.segmentVariants(p,snvCallerNum,indelCallerNum);
-//				if (tumorAF>0 && tumorAF<=1)
-//					   tumorAFs.add(tumorAF);
-//			}
-//			i++;
-//		}
-		
-		
+				
 		i=0;
 		for (Variant p : mergedList) {
 			i++;
-			System.out.println("Writing:"+i);
-//			if (i==3439)
-//				System.out.println("found!");
+			if (i%1000==0)
+		    	logger.log(Level.INFO,"Finished writing "+i);
 			firstVCFFile.writeVariants(bw,p,snvCallerNum,indelCallerNum);
-//			firstVCFFile.writeVariants(bw,p,snvCallerNum,indelCallerNum,medianAFs);
 		}
+		logger.log(Level.INFO,"Finished writing the merged VCF and processed "+i+" in total.");
 		bw.close();
-		System.out.println("Done!");
+		logger.log(Level.INFO,"Writing VCF is done!");
 	}
 	
 	private  static  void initCallers() {

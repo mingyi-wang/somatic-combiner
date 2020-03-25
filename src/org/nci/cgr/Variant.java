@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.Comparator;
 
 
@@ -104,14 +105,14 @@ public class Variant {
 			    			    		if (gt.getDP()>0)
 			    			    		  return (float) AD[0]/gt.getDP();
 			    			    		else {
-			    			    			System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+			    			    			SomaticCombiner.logger.log(Level.WARNING,variantContext.getContig()+":"+variantContext.getStart()+"\t"+
 			   			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
 			   			            		  		+ "\t"+" Varscan has DP is 0 in FORMAT!");
 			   	    			    	    return -1;
 			    			    		}
 			    			    	}
 			    			    	else {
-			    			    		System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+			    			    		SomaticCombiner.logger.log(Level.WARNING,variantContext.getContig()+":"+variantContext.getStart()+"\t"+
 			   			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
 			   			            		  		+ "\t"+" Varscan has no DP in FORMAT!");
 			   	    			    	    return -1;
@@ -119,7 +120,7 @@ public class Variant {
 			    			    	}
 		    			    	}
 		    			    	else {
-			    			    	System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+		    			    		SomaticCombiner.logger.log(Level.WARNING,variantContext.getContig()+":"+variantContext.getStart()+"\t"+
 					            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
 					            		  		+ "\t"+" Muse or Varscan AD lenght not equal to 2 or 1 in FORMAT!");
 			    			    	return -1;
@@ -127,14 +128,14 @@ public class Variant {
 		    			    }
 	    				}
 	    				else {
-	    					System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+	    					SomaticCombiner.logger.log(Level.WARNING,variantContext.getContig()+":"+variantContext.getStart()+"\t"+
 			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
 			            		  		+ "\t"+"has no Muse AD in FORMAT!");
 	    					return -1;
 	    				}
 	    			}
 	    			else {
-	    				System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+	    				SomaticCombiner.logger.log(Level.WARNING,variantContext.getContig()+":"+variantContext.getStart()+"\t"+
 		            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
 		            		  		+ "\t"+"has no Muse AD in FORMAT!");
 	    				return -1;
@@ -162,7 +163,7 @@ public class Variant {
 	            	   if (altDP !=null && refDP !=null && refDP.length==2 && altDP.length==2)	  
             		     return (float)Integer.parseInt(altDP[0])/ (Integer.parseInt(refDP[0])+Integer.parseInt(altDP[0]));
 	            	   else {
-	            		  System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+	            		   SomaticCombiner.logger.log(Level.WARNING,variantContext.getContig()+":"+variantContext.getStart()+"\t"+
 	            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
 	            		  		+ "\t"+"has no strelka AU:CU:GU:TU or correct AU:CU:GU:TU in FORMAT!");
 	            		  return -1;  
@@ -216,7 +217,7 @@ public class Variant {
 		    						  break;
 		    					   }
 		    				if (!foundTumor) {
-		    					System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+		    					SomaticCombiner.logger.log(Level.WARNING,variantContext.getContig()+":"+variantContext.getStart()+"\t"+
 				            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
 				            		  		+ "\t"+"has no Tumor sample in FORMAT for "+ callerNameWithHighestPriority+" calling!");
 			    	   			
@@ -231,7 +232,7 @@ public class Variant {
 		                                 return Float.parseFloat(extendedGT.get(afName).toString());
 		                             
 			            		  
-			    			   System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+			    			   SomaticCombiner.logger.log(Level.WARNING,variantContext.getContig()+":"+variantContext.getStart()+"\t"+
 				            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
 				            		  		+ "\t"+"has no AF or DP in FORMAT for "+callerNameWithHighestPriority+" calling!");	
 			    			   
@@ -239,7 +240,7 @@ public class Variant {
 			    			   }
 		    	   		}
 			    	    else 
-		    	   			System.out.println("Warining:"+variantContext.getContig()+":"+variantContext.getStart()+"\t"+
+			    	    	SomaticCombiner.logger.log(Level.WARNING,variantContext.getContig()+":"+variantContext.getStart()+"\t"+
 			            	         variantContext.getAlleles().get(0).getBaseString()+"\t"+variantContext.getAlleles().get(1).getBaseString()
 			            		  		+ "\t"+"has no AF in FORMAT for "+ callerNameWithHighestPriority+" calling!");
 	    	   				    	   			    	   		
