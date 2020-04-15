@@ -240,15 +240,12 @@ public class VCFFile {
 			bw.append("Tumor_DP="+tumorDP+";");
 			
 		// }
-		bw.append(SomaticCombiner.COUNT_TAG+"="+Integer.bitCount(vv.getSet())+VCFConstants.INFO_FIELD_SEPARATOR+SomaticCombiner.callerSymbols+"="+voting(vv));
-		
+		bw.append(SomaticCombiner.COUNT_TAG+"="+Integer.bitCount(vv.getSet())+VCFConstants.INFO_FIELD_SEPARATOR+SomaticCombiner.callerSymbols+"="+voting(vv));		
 		bw.append("\t"+format);
 		if (gtString.endsWith("\t")) {
 			gtString = gtString.substring(0, gtString.length()-1);
 		}
-		bw.append("\t"+gtString);
-		
-		
+		bw.append("\t"+gtString);		
 		bw.newLine();
 		bw.flush();
 	}
@@ -519,13 +516,13 @@ public class VCFFile {
 			if (!foundTumor) {
 				SomaticCombiner.logger.log(Level.WARNING,"Warning: "+filePath+" is skipped due to no TUMOR or TUMOUR found in the samplename line!");
 
-				return 0;
+				return -1;
 			}
 		}
 		else
 			if (sampleNames.size()>2) {
 				SomaticCombiner.logger.log(Level.WARNING,"Warning: "+filePath+" is skipped due to more than two samples in the VCF!");
-				return 0;
+				return -1;
 			}
 		int count=0;
 		mHeader=processHeader();	

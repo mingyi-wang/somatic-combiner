@@ -111,12 +111,16 @@ public class SomaticCombiner {
 		int snvCallerNum=0;
 		int indelCallerNum=0;
 		List<Variant> list =new ArrayList<Variant>();
+		logger.log(Level.INFO,"somaticCombiner "+version);
 		System.out.println("somaticCombiner "+version);
 		Option[] allOptions=line.getOptions();
+		String parameters="";
 		for (Option o:allOptions) {
 			System.out.print("-"+o.getOpt()+" "+o.getValue()+" ");
+			parameters+="-"+o.getOpt()+" "+o.getValue()+" ";
 		}
 		System.out.println();
+		logger.log(Level.INFO,"Parameters: "+parameters);
 		logger.log(Level.INFO,"Loading VCFs...");
 		for (Caller caller:callerList) {
 			if (caller.getFilePath()!=null) {
@@ -126,7 +130,7 @@ public class SomaticCombiner {
 //					System.out.println("Found!");
 //				}
 				int cnt=vcfFile.importVariants(list);
-			    if(cnt>0) {
+			    if(cnt>=0) {
 			    	logger.log(Level.INFO,"Finished loading "+caller.getName()+" from "+caller.getFilePath()+". Total count:"+cnt+".");
 			    	caller.setVcfFile(vcfFile);
 			    	callerSymbols+=caller.getSymbol();
