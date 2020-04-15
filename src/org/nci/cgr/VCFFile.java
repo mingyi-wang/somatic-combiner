@@ -115,7 +115,10 @@ public class VCFFile {
 
 				   if (i==0) 
 					   if (gt.getAlleles().size()>0) format="GT";
-				   
+				   if (!format.contains("GT")){
+				   		if ((i>0) && !gt.isCalled())
+				   		    gtString+="0/0"+VCFConstants.GENOTYPE_FIELD_SEPARATOR;
+				   }
 				  
 				   if (gt.isCalled()) {
 					   if (gt.isHom()){							
@@ -159,12 +162,17 @@ public class VCFFile {
 							  format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+SomaticCombiner.callerName(vv.getCaller())+"_"+key;
 					   }
 					   if (extendedAttributes.containsKey(key))
-					      gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+extendedAttributes.get(key).toString();
+					     gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+extendedAttributes.get(key).toString().trim();
 					   else
-						   gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+".";
+						 gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+".";
 				   }
 				   
 				   gtString=gtString+"\t";
+				   if (!format.contains("GT")){
+				   		if (i==0) 
+				   		    gtString="0/1"+VCFConstants.GENOTYPE_FIELD_SEPARATOR+gtString;
+				   }
+				   
 			   }   
 			}
 		}
@@ -172,14 +180,16 @@ public class VCFFile {
 			format="GT";
 			gtString="0/1\t0/0";
 		}
+		if (!format.contains("GT"))
+			format="GT"+VCFConstants.GENOTYPE_FIELD_SEPARATOR+format;
 		// List<String> keysSorted = info.keySet().stream().collect(Collectors.toList());
 		List<String> aList = info.keySet().stream().collect(Collectors.toList());
 		aList.sort(Comparator.naturalOrder());
 		for (String key:aList) {		
 			if (Integer.bitCount(vv.getSet())==1)
-				infoContent=infoContent+SomaticCombiner.callerName(vv.getCaller())+"_"+key+"="+info.get(key).toString().replace("[", "").replace("]", "")+VCFConstants.INFO_FIELD_SEPARATOR;
+				infoContent=infoContent+SomaticCombiner.callerName(vv.getCaller())+"_"+key+"="+info.get(key).toString().replace("[", "").replace("]", "").replace(" ","").trim()+VCFConstants.INFO_FIELD_SEPARATOR;
 			else
-		        infoContent=infoContent+key+"="+info.get(key).toString().replace("[", "").replace("]", "")+VCFConstants.INFO_FIELD_SEPARATOR;			
+		        infoContent=infoContent+key+"="+info.get(key).toString().replace("[", "").replace("]", "").replace(" ","").trim()+VCFConstants.INFO_FIELD_SEPARATOR;			
 		}
 		bw.append(".\t");
 		String WESPass="ADJ_LowConf";
@@ -351,9 +361,9 @@ public class VCFFile {
 		aList.sort(Comparator.naturalOrder());
 		for (String key:aList) {		
 			if (Integer.bitCount(vv.getSet())==1)
-				infoContent=infoContent+SomaticCombiner.callerName(vv.getCaller())+"_"+key+"="+info.get(key).toString().replace("[", "").replace("]", "")+VCFConstants.INFO_FIELD_SEPARATOR;
+				infoContent=infoContent+SomaticCombiner.callerName(vv.getCaller())+"_"+key+"="+info.get(key).toString().replace("[", "").replace("]", "").replace(" ","").trim()+VCFConstants.INFO_FIELD_SEPARATOR;
 			else
-		        infoContent=infoContent+key+"="+info.get(key).toString().replace("[", "").replace("]", "")+VCFConstants.INFO_FIELD_SEPARATOR;			
+		        infoContent=infoContent+key+"="+info.get(key).toString().replace("[", "").replace("]", "").replace(" ","").trim()+VCFConstants.INFO_FIELD_SEPARATOR;			
 		}
 //		bw.append(".\t");
 		String WESPass="ADJ_LowConf";
@@ -716,7 +726,7 @@ public class VCFFile {
 	public void writeVariants(BufferedWriter bw,Variant vv, int snvCallerNum,int indelCallerNum,ArrayList<String> medianAFs) throws IOException, ClassNotFoundException {
 //		if (vv.getVariantContext().getStart()==6263642)
 //			System.out.println("found!");
-		
+//      This function for test only		
 		Variant variant=new Variant(vv.getVariantContext(),vv.getCaller(),vv.getPriority(),vv.getSet());
 		// variant.g
 		bw.append(vv.getVariantContext().getContig()+"\t"+vv.getVariantContext().getStart()+"\t"+vv.getVariantContext().getID()+"\t"+
@@ -809,9 +819,9 @@ public class VCFFile {
 							  format=format+VCFConstants.GENOTYPE_FIELD_SEPARATOR+SomaticCombiner.callerName(vv.getCaller())+"_"+key;
 					   }
 					   if (extendedAttributes.containsKey(key))
-					      gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+extendedAttributes.get(key).toString();
+					      gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+extendedAttributes.get(key).toString().replace(" ","").trim();
 					   else
-						   gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+".";
+						  gtString=gtString+VCFConstants.GENOTYPE_FIELD_SEPARATOR+".";
 				   }
 				   
 				   gtString=gtString+"\t";
@@ -827,9 +837,9 @@ public class VCFFile {
 		aList.sort(Comparator.naturalOrder());
 		for (String key:aList) {		
 			if (Integer.bitCount(vv.getSet())==1)
-				infoContent=infoContent+SomaticCombiner.callerName(vv.getCaller())+"_"+key+"="+info.get(key).toString().replace("[", "").replace("]", "")+VCFConstants.INFO_FIELD_SEPARATOR;
+				infoContent=infoContent+SomaticCombiner.callerName(vv.getCaller())+"_"+key+"="+info.get(key).toString().replace("[", "").replace("]", "").replace(" ","").trim()+VCFConstants.INFO_FIELD_SEPARATOR;
 			else
-		        infoContent=infoContent+key+"="+info.get(key).toString().replace("[", "").replace("]", "")+VCFConstants.INFO_FIELD_SEPARATOR;			
+		        infoContent=infoContent+key+"="+info.get(key).toString().replace("[", "").replace("]", "").replace(" ","").trim()+VCFConstants.INFO_FIELD_SEPARATOR;			
 		}
 		bw.append(".\t");
 		String WESPass="ADJ_LowConf";
