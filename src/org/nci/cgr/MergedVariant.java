@@ -73,7 +73,7 @@ public class MergedVariant extends Variant
 			}
 		}
 		if (other.getVariantContext().hasLog10PError()) {
-			qual=String.valueOf(getVariantContext().getPhredScaledQual());
+			qual=String.valueOf(other.getVariantContext().getPhredScaledQual());
 			mergedInfo.put(SomaticCombiner.callerName(other.caller)+"_"+VCFFile.QUAL_TAG, qual);
 		}
 		
@@ -196,8 +196,9 @@ public class MergedVariant extends Variant
 						} else
 							tmpSamples[1] = sampleName;
 					if (tmpFoundTumor) {
-						GenotypeBuilder mergedGenotypeBuilder = new GenotypeBuilder();
+						
 					    for (int i = 0; i < tmpGenotypes.size(); i++) {
+					    	GenotypeBuilder mergedGenotypeBuilder = new GenotypeBuilder();
 					    	String sampleName=VCFFile.TUMOR_TAG1;
 							if (i==1) sampleName=VCFFile.NORMAL_TAG;
 				    	    Map<String, Object> thisExtendedGT = tmpGenotypes.get(tmpSamples[i]).getExtendedAttributes();

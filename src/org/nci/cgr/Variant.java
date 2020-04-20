@@ -228,7 +228,7 @@ public class Variant {
 			    			   
 			    			   for (String key:extendedGT.keySet()) 
 			            		  if (key.equals(afName)) 
-			            			  
+			            			//  if (extendedGT.get(afName).toString().toLowerCase().equals("nan"))
 		                                 return Float.parseFloat(extendedGT.get(afName).toString());
 		                             
 			            		  

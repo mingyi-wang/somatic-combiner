@@ -165,7 +165,7 @@ public class SomaticCombiner {
 			i++;
 			if (i%10000==0)
 			  logger.log(Level.INFO,"Processed: "+i);
-//			if (p.getVariantContext().getStart()==6263642)
+//			if (p.getVariantContext().getStart()==1717242)
 //				System.out.println(p.getVariantContext().getContig()+"\t"+p.getVariantContext().getStart());
 			MergedVariant mp=new MergedVariant(p.getVariantContext(), p.getCaller(),p.getPriority(),p.getSet());
 			int index=mergedList.indexOf(mp);
@@ -194,6 +194,8 @@ public class SomaticCombiner {
 		i=0;
 		for (Variant p : mergedList) {
 			i++;
+//			if (p.getVariantContext().getStart()==1717242)
+//				System.out.println("Output");
 			if (i%10000==0)
 		    	logger.log(Level.INFO,"Finished writing "+i);
 			firstVCFFile.writeVariants(bw,p,snvCallerNum,indelCallerNum);

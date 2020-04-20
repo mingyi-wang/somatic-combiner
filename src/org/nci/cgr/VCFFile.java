@@ -64,8 +64,8 @@ public class VCFFile {
 
 
 	public void writeVariants(BufferedWriter bw,Variant vv, int snvCallerNum,int indelCallerNum) throws IOException, ClassNotFoundException {
-//		if (vv.getVariantContext().getStart()==58042518)
-//			System.out.println("found!");
+//		if (vv.getVariantContext().getStart()==1717242)
+//		System.out.println("found!");
 		
 		Variant variant=new Variant(vv.getVariantContext(),vv.getCaller(),vv.getPriority(),vv.getSet());
 		// variant.g
@@ -530,7 +530,8 @@ public class VCFFile {
 		final CloseableIterator<VariantContext> variantIterator = vcfFileReader.iterator();
 		while (variantIterator.hasNext()) {
 			final VariantContext vc = variantIterator.next();
-//			if (vc.getStart()==21233587 && vc.getContig().contentEquals("chr1"))
+			
+//			if (vc.getStart()==1717242)
 //				System.out.println("found!");
 		//	SomaticCombiner.logger.log(Level.INFO,caller+" "+vc.getContig()+":"+vc.getStart());
 			// Set<String> filters=vc.getFilters();
@@ -738,6 +739,8 @@ public class VCFFile {
 		String infoContent="";
 		String format="";
 		String gtString="";
+//		if (vv.getVariantContext().getStart()==58440851)
+//			System.out.println ("found");
 		//vcfEncoder.write(bw, vv.getVariantContext());
 		if (vv.getVariantContext().hasGenotypes()) {
 		   Set<String> sampleNames=vv.getVariantContext().getSampleNames();
