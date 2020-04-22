@@ -165,7 +165,7 @@ public class SomaticCombiner {
 			i++;
 			if (i%10000==0)
 			  logger.log(Level.INFO,"Processed: "+i);
-//			if (p.getVariantContext().getStart()==1717242)
+//			if (p.getVariantContext().getStart()==30880432)
 //				System.out.println(p.getVariantContext().getContig()+"\t"+p.getVariantContext().getStart());
 			MergedVariant mp=new MergedVariant(p.getVariantContext(), p.getCaller(),p.getPriority(),p.getSet());
 			int index=mergedList.indexOf(mp);

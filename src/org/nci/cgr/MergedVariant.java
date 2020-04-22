@@ -185,7 +185,7 @@ public class MergedVariant extends Variant
 			}
 			
 			if (tmpGenotypes!=null) {
-				Map<String, Object> mergedExtendedGT = new HashMap<String, Object>();
+				
 				if (tmpSampleNames.size() == 2) {
 					String[] tmpSamples = new String[2];
 					boolean tmpFoundTumor = false;
@@ -198,6 +198,7 @@ public class MergedVariant extends Variant
 					if (tmpFoundTumor) {
 						
 					    for (int i = 0; i < tmpGenotypes.size(); i++) {
+					    	Map<String, Object> mergedExtendedGT = new HashMap<String, Object>();
 					    	GenotypeBuilder mergedGenotypeBuilder = new GenotypeBuilder();
 					    	String sampleName=VCFFile.TUMOR_TAG1;
 							if (i==1) sampleName=VCFFile.NORMAL_TAG;
