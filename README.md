@@ -1,4 +1,4 @@
-# somatic-combiner v1.0
+# somatic-combiner v1.03
 A consensus ensemble approach which can combine somatic variants VCFs generated from seven popular callers: LoFreq, MuSE, MuTect2, MuTect, Strelka, VarDict and VarScan.
 
 ## Prerequisite
