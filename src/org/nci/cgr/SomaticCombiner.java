@@ -51,6 +51,7 @@ public class SomaticCombiner {
 	public static Logger logger = Logger.getLogger(SomaticCombiner.class.getName());
 	public static String version="V1.02";
 	public static ArrayList<String> medianAFs=new ArrayList<String>();
+	public static float thresholdVAF=0;
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 		InputStream is=SomaticCombiner.class.getClassLoader().getResourceAsStream("mylogging.properties");
 		LogManager.getLogManager().readConfiguration(is);
@@ -65,6 +66,7 @@ public class SomaticCombiner {
 		
 		options.addOption("o","output",true,"Output VCF file");
 		options.addOption("h","help",false,"print this message");
+		options.addOption("t","threshold",true,"Above this tumor VAF threshold for output");
 		String outputFilePath=null;
 		
 
@@ -84,6 +86,10 @@ public class SomaticCombiner {
 			formatter.printHelp( "somaticCombiner "+version, options );
 			System.exit(1);	
 		}
+		if (line.hasOption("t")) 
+			thresholdVAF=Float.parseFloat(line.getOptionValue("t"));
+			
+		
 		for (Caller caller:callerList) {
 			if (line.hasOption(caller.getSymbol())) {
 				caller.setFilePath(line.getOptionValue(caller.getSymbol()));
@@ -192,15 +198,18 @@ public class SomaticCombiner {
 		VCFFile.writeHeader(firstVCFFile.getmHeader(), bw);
 				
 		i=0;
+		long writtenCount=0;
 		for (Variant p : mergedList) {
 			i++;
 //			if (p.getVariantContext().getStart()==1717242)
 //				System.out.println("Output");
 			if (i%10000==0)
-		    	logger.log(Level.INFO,"Finished writing "+i);
-			firstVCFFile.writeVariants(bw,p,snvCallerNum,indelCallerNum);
+		    	logger.log(Level.INFO,"Finished writing "+writtenCount+"/"+i);
+			if (firstVCFFile.writeVariants(bw,p,snvCallerNum,indelCallerNum)){
+				writtenCount++;
+			};
 		}
-		logger.log(Level.INFO,"Finished writing the merged VCF and processed "+i+" in total.");
+		logger.log(Level.INFO,"Finished the merged VCF. (Wrote/processed "+writtenCount+"/"+i+" in total)");
 		bw.close();
 		logger.log(Level.INFO,"Writing VCF is done!");
 	}

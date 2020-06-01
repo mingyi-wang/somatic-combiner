@@ -63,21 +63,13 @@ public class VCFFile {
 	}
 
 
-	public void writeVariants(BufferedWriter bw,Variant vv, int snvCallerNum,int indelCallerNum) throws IOException, ClassNotFoundException {
+	public boolean writeVariants(BufferedWriter bw,Variant vv, int snvCallerNum,int indelCallerNum) throws IOException, ClassNotFoundException {
 //		if (vv.getVariantContext().getStart()==1717242)
 //		System.out.println("found!");
 		
 		Variant variant=new Variant(vv.getVariantContext(),vv.getCaller(),vv.getPriority(),vv.getSet());
 		// variant.g
-		bw.append(vv.getVariantContext().getContig()+"\t"+vv.getVariantContext().getStart()+"\t"+vv.getVariantContext().getID()+"\t"+
-	              vv.getVariantContext().getAlleles().get(0).getBaseString()+"\t");
-		
-		if (vv.getVariantContext().getAlleles().size()>1)
-			bw.append(vv.getVariantContext().getAlleles().get(1).getBaseString()+"\t");
-		else
-			bw.append(vv.getVariantContext().getAlleles().get(0).getBaseString()+"\t");
-		
-		Map<String,Object> info=vv.getVariantContext().getAttributes();
+    	Map<String,Object> info=vv.getVariantContext().getAttributes();
 		String infoContent="";
 		String format="";
 		String gtString="";
@@ -86,7 +78,7 @@ public class VCFFile {
 		   Set<String> sampleNames=vv.getVariantContext().getSampleNames();
 		   if ((sampleNames.size()!=2) && (sampleNames.size()!=0)) {
 			   SomaticCombiner.logger.log(Level.WARNING,"Error: the samples in "+filePath+" not equals to 2 or 0! The variants in this file will be skipped!");
-               return;
+               return false;
 		   }
 		   if (sampleNames.size()==2) {
 			   String[] samples=new String[2];
@@ -100,7 +92,7 @@ public class VCFFile {
 					  samples[1]=sampleName;
 			   if (!foundTumor) {
 				   SomaticCombiner.logger.log(Level.WARNING,"Error: the samples in "+filePath+" does not contain TUMOR in the genotype columns! The variants in this file will be skipped!");
-	               return; 
+	               return false; 
 			   }
 			   Set<String> extendedGtKeyset=new TreeSet<String>();
 			   for(int i=0;i<samples.length;i++) {
@@ -191,7 +183,7 @@ public class VCFFile {
 			else
 		        infoContent=infoContent+key+"="+info.get(key).toString().replace("[", "").replace("]", "").replace(" ","").trim()+VCFConstants.INFO_FIELD_SEPARATOR;			
 		}
-		bw.append(".\t");
+		
 		String WESPass="ADJ_LowConf";
 		float tumorAF=0;
 		int tumorDP=0;
@@ -220,34 +212,52 @@ public class VCFFile {
 
 		}
 		
-		if (vv.getVariantContext().isSNP()) {
-			if ((float)Integer.bitCount(vv.getSet()) / snvCallerNum >= 0.5)
-				bw.append("PASS" + ";"+WESPass+"\t");
-			else
-				bw.append("LowConf" + ";"+WESPass+"\t");
-		} else {
-			if ((float)Integer.bitCount(vv.getSet()) / indelCallerNum >= 0.5)
-				bw.append("PASS"  + ";"+WESPass+"\t");
-			else
-				bw.append("LowConf"  + ";"+WESPass+ "\t");
+
+		boolean isPrint=false;
+		if (SomaticCombiner.thresholdVAF!=0) {
+			if (tumorAF>=SomaticCombiner.thresholdVAF)
+				isPrint=true;
 		}
-						
-		bw.append(infoContent);
-		// if (vv.getVariantContext().isSNP()) {
-		if (tumorAF!=-1)
-		    bw.append("Tumor_AF="+tumorAF+";");
-		if (tumorDP>0)
-			bw.append("Tumor_DP="+tumorDP+";");
-			
-		// }
-		bw.append(SomaticCombiner.COUNT_TAG+"="+Integer.bitCount(vv.getSet())+VCFConstants.INFO_FIELD_SEPARATOR+SomaticCombiner.callerSymbols+"="+voting(vv));		
-		bw.append("\t"+format);
-		if (gtString.endsWith("\t")) {
-			gtString = gtString.substring(0, gtString.length()-1);
+		else
+		   isPrint=true;
+		if (isPrint) {
+			bw.append(vv.getVariantContext().getContig()+"\t"+vv.getVariantContext().getStart()+"\t"+vv.getVariantContext().getID()+"\t"+
+		              vv.getVariantContext().getAlleles().get(0).getBaseString()+"\t");
+			if (vv.getVariantContext().getAlleles().size()>1)
+				bw.append(vv.getVariantContext().getAlleles().get(1).getBaseString()+"\t");
+			else
+				bw.append(vv.getVariantContext().getAlleles().get(0).getBaseString()+"\t");		
+			bw.append(".\t");
+			if (vv.getVariantContext().isSNP()) {
+				if ((float)Integer.bitCount(vv.getSet()) / snvCallerNum >= 0.5)
+					bw.append("PASS" + ";"+WESPass+"\t");
+				else
+					bw.append("LowConf" + ";"+WESPass+"\t");
+			} else {
+				if ((float)Integer.bitCount(vv.getSet()) / indelCallerNum >= 0.5)
+					bw.append("PASS"  + ";"+WESPass+"\t");
+				else
+					bw.append("LowConf"  + ";"+WESPass+ "\t");
+			}
+					
+			bw.append(infoContent);
+			// if (vv.getVariantContext().isSNP()) {
+			if (tumorAF!=-1)
+			    bw.append("Tumor_AF="+tumorAF+";");
+			if (tumorDP>0)
+				bw.append("Tumor_DP="+tumorDP+";");
+				
+			// }
+			bw.append(SomaticCombiner.COUNT_TAG+"="+Integer.bitCount(vv.getSet())+VCFConstants.INFO_FIELD_SEPARATOR+SomaticCombiner.callerSymbols+"="+voting(vv));		
+			bw.append("\t"+format);
+			if (gtString.endsWith("\t")) {
+				gtString = gtString.substring(0, gtString.length()-1);
+			}
+			bw.append("\t"+gtString);		
+			bw.newLine();
+			bw.flush();
 		}
-		bw.append("\t"+gtString);		
-		bw.newLine();
-		bw.flush();
+		return isPrint;
 	}
 	
 	
@@ -531,7 +541,7 @@ public class VCFFile {
 		while (variantIterator.hasNext()) {
 			final VariantContext vc = variantIterator.next();
 			
-//			if (vc.getStart()==1717242)
+//			if (vc.getStart()==29912188)
 //				System.out.println("found!");
 		//	SomaticCombiner.logger.log(Level.INFO,caller+" "+vc.getContig()+":"+vc.getStart());
 			// Set<String> filters=vc.getFilters();
