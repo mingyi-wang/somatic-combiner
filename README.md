@@ -12,8 +12,9 @@ git clone https://github.com/mingyi-wang/somatic-combiner.git
 
 The input VCF files can be .gz files. The runnable JAR file is loacted in the example folder.
 
-java -jar somaticCombiner.jar -L ${LoFreq_INDEL_VCF} -l ${LoFreq_SNV_VCF} -u ${MuSE_VCF} -M ${MuTect2_VCF} -m ${MuTect_VCF} -s ${Strelka_SNV_VCF} -S ${Strelka_INDEL_VCF} -v ${VarScan_SNV_VCF} -V ${Varscan_INDEL_VCF} -D ${VarDict_VCF} -o ${OUTPUT_VCF}
+java -jar somaticCombiner.jar -L ${LoFreq_INDEL_VCF} -l ${LoFreq_SNV_VCF} -u ${MuSE_VCF} -M ${MuTect2_VCF} -m ${MuTect_VCF} -s ${Strelka_SNV_VCF} -S ${Strelka_INDEL_VCF} -v ${VarScan_SNV_VCF} -V ${Varscan_INDEL_VCF} -D ${VarDict_VCF} -o ${OUTPUT_VCF} -t ${Tumor VAF threshold}
 
+"-t" is the optional option. A threshold value for filtering all variants below this value.
 - Example
 
 Using the example VCF files in the example folder to run test
