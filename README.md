@@ -29,3 +29,7 @@ cd example && sh ./run_combine_example.sh
 5. "GT:DP:AD" values in the output VCF will use the values from input VCFs according to the configured priority order: MuTect2 > MuTect > MuSE > VarDict > Strelka > LoFreq > VarScan.
 6. The INFO column of an output VCF contains two fields, Tumor_AD (Tumor allelic fraction) and Tumor_DP (Tumor depth) (e.g., "Tumor_AF=0.25;Tumor_DP=26;") and both of them are retrieved from individual VCFs accoring to above priority order.
 7. The output VCF is a superset of all VCFs. In the output VCF, the calling status of individual callers will be annotated by in the INFO column (e.g., "NumCallers=7;lLsSumMDvV=1010111110") and tagged as "PASS", "LowConf", "ADJ_LowConf" or "ADJ_PASS" in the FILTER column. The description of those items are presented in the header part of output VCFs.
+8. The BED file for 368 cancer genes used for evaluation tests in deep target sequencing data is provided [here](./CGB-368genes_primary_targets.bed)
+
+## References
+Mingyi Wang, Wen Luo, Kristine Jones, Xiaopeng Bian, Russell Williams, Herbert Higson, Dongjing Wu, Belynda Hicks, Meredith Yeager, Bin Zhu. SomaticCombiner: improving the performance of somatic variant calling based on evaluation tests and a consensus approach. Scientific Reports. 2020 DOI : 10.1038/s41598-020-69772-8.
