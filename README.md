@@ -32,4 +32,4 @@ cd example && sh ./run_combine_example.sh
 8. The BED file for 368 cancer genes used for evaluation tests in deep target sequencing data is provided [here](./CGB-368genes_primary_targets.bed)
 
 ## References
-Mingyi Wang, Wen Luo, Kristine Jones, Xiaopeng Bian, Russell Williams, Herbert Higson, Dongjing Wu, Belynda Hicks, Meredith Yeager, Bin Zhu. SomaticCombiner: improving the performance of somatic variant calling based on evaluation tests and a consensus approach. Scientific Reports. 2020 DOI : 10.1038/s41598-020-69772-8.
+Mingyi Wang, Wen Luo, Kristine Jones, Xiaopeng Bian, Russell Williams, Herbert Higson, Dongjing Wu, Belynda Hicks, Meredith Yeager, Bin Zhu. SomaticCombiner: improving the performance of somatic variant calling based on evaluation tests and a consensus approach. Sci Rep 10, 12898 (2020). https://doi.org/10.1038/s41598-020-69772-8
