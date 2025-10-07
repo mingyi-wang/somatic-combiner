@@ -252,33 +252,60 @@ public class Variant {
 	    }
 	    
 	    public static Comparator<Variant> VariantComparator = new Comparator<Variant>() {
-	    	public int compare(Variant v1, Variant v2 ) {
-	    	   String contig1 = v1.getVariantContext().getContig();
-	    	   String contig2 = v2.getVariantContext().getContig();
+	        @Override
+	        public int compare(Variant v1, Variant v2) {
+	            String c1 = v1.getVariantContext().getContig();
+	            String c2 = v2.getVariantContext().getContig();
+
+	            int rank1 = getContigRank(c1);
+	            int rank2 = getContigRank(c2);
+
+	            if (rank1 != rank2) {
+	                return Integer.compare(rank1, rank2);
+	            }
+
+	            // Same contig group → compare by position
+	            return Integer.compare(v1.getVariantContext().getStart(), v2.getVariantContext().getStart());
+	        }
+	    };
+	 // Compute a stable rank for each contig
+	    private static int getContigRank(String contig) {
+	        // Remove "chr" prefix
+	        if (contig.startsWith("chr")) contig = contig.substring(3);
+	        if (contig.equals("M")) contig = "MT";
+
+	        String[] parts = contig.split("_");  // split at underscores
+	        String base = parts[0];              // main chromosome part
+
+	        int rank;
+
+	        // Numeric chromosomes
+	        if (base.matches("\\d+")) {
+	            rank = Integer.parseInt(base);
+	        } else {
+	            switch (base) {
+	                case "X": rank = 23; break;
+	                case "Y": rank = 24; break;
+	                case "MT": rank = 25; break;
+	                default: rank = 1000; // unknown/unplaced contigs
+	            }
+	        }
+
+	        // If there is a suffix (_random, _alt, etc.), add hash-based number to differentiate
+	        if (parts.length > 1) {
+	            // multiply main rank to keep main chromosomes first
+	            rank = rank * 100000 + parts[1].hashCode();
+	        } else if (!base.matches("\\d+") && !base.equals("X") && !base.equals("Y") && !base.equals("MT")) {
+	            // unknown contig → use hash of base
+	            rank = rank * 100000 + base.hashCode();
+	        }
+	        else {
+	            rank = rank * 100000;  // main contig
+	        }
+
+	        return rank;
+	    }
 	    
-	    	   if (contig1.startsWith("chr"))
-	    		   contig1=contig1.substring(3);
-	    	   if (contig2.startsWith("chr"))
-	    		   contig2=contig2.substring(3);
-	    	   
-	    	   //ascending order
-	    	   if (contig1.matches("\\d+") && contig2.matches("\\d+")) {
-	    		   int contigNum1=Integer.parseInt(contig1);
-		    	   int contigNum2=Integer.parseInt(contig2);
-	    		   if (contigNum1==contigNum2)
-	    			   return Integer.compare(v1.getVariantContext().getStart(),v2.getVariantContext().getStart());
-	    		   else
-	    			   return Integer.compare(contigNum1,contigNum2);
-	    	   }
-	    	   else {
-	    		   if(contig1.equals(contig2))
-	    		      return Integer.compare(v1.getVariantContext().getStart(),v2.getVariantContext().getStart());
-	    		   else
-	    			  return contig1.compareTo(contig2);
-	    			   
-	    	   }
-	    	   
-	        }};
 	    
 	    public VariantContext getVariantContext() {
 			return variantContext;
